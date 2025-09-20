@@ -1,0 +1,62 @@
+name: Deploy (SSH + WP-CLI)
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  PLUGIN_SLUG: webfiable-info
+  REMOTE_PLUGIN_PATH: ${{ secrets.WP_PATH }}/wp-content/plugins/webfiable-info
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Evita problemas de host key al conectar por primera vez
+      - name: Add known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload plugin via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          # Si tu llave tiene passphrase, descomenta:
+          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          source: .
+          target: ${{ env.REMOTE_PLUGIN_PATH }}
+          rm: true
+          exclude: |
+            .git*
+            .github/
+            .vscode/
+            node_modules/
+            vendor/
+            tests/
+            coverage/
+            *.zip
+            *.tar.gz
+            composer.*
+            phpcs.xml
+            README.md
+
+      - name: Activate + flush with WP-CLI
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          # Si tu llave tiene passphrase:
+          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd "${{ secrets.WP_PATH }}"
+            wp plugin activate "${{ env.PLUGIN_SLUG }}" || true
+            wp rewrite flush --hard
