@@ -1,0 +1,38 @@
+# === Archivos del sistema ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# === Archivos de editor/IDE ===
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# === Logs y temporales ===
+*.log
+*.tmp
+
+# === Dependencias ===
+node_modules/
+vendor/
+# composer.lock se incluye en el repo (no lo ignores)
+package-lock.json
+yarn.lock
+
+# === WordPress core (no debe estar en el repo del plugin) ===
+wp/
+wp-admin/
+wp-includes/
+
+# === Archivos de despliegue ===
+*.zip
+*.tar.gz
+
+# === Tests y CI (resultados temporales, no los tests en sí) ===
+/tests/results/
+/coverage/
