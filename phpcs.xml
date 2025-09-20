@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<ruleset name="MiPlugin">
+  <!-- Estándares WordPress -->
+  <rule ref="WordPress"/>
+  <rule ref="WordPress-Extra"/>
+  <rule ref="WordPress-Docs"/>
+
+  <!-- Qué analizar y qué ignorar -->
+  <file>./</file>
+  <exclude-pattern>vendor/*</exclude-pattern>
+  <exclude-pattern>node_modules/*</exclude-pattern>
+  <exclude-pattern>tests/results/*</exclude-pattern>
+  <exclude-pattern>coverage/*</exclude-pattern>
+</ruleset>
