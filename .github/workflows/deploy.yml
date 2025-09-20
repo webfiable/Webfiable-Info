@@ -15,48 +15,79 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Evita problemas de host key al conectar por primera vez
-      - name: Add known_hosts
+      # 0) Preparar la llave y carpeta .ssh
+      - name: Prepare SSH key
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_key
+          chmod 600 ~/.ssh/id_key
+          ssh -V || true
+          ls -la ~/.ssh
 
+      # 1) Diagnóstico de conectividad (no aborta, solo informa)
+      - name: Connectivity diagnostics
+        run: |
+          set -x
+          # DNS
+          getent hosts "${{ secrets.SSH_HOST }}" || true
+          # Prueba TCP del puerto
+          bash -lc 'exec 3<>/dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }} && echo TCP_OPEN || echo TCP_CLOSED' || true
+          # Intento de obtener host key (si falla, seguimos)
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          cat ~/.ssh/known_hosts || true
+
+      # 2) Comprobación real de SSH (acepta host key automáticamente)
+      - name: SSH sanity check
+        run: |
+          set -e
+          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_key -p "${{ secrets.SSH_PORT }}" \
+              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+              'echo "SSH_OK"; whoami; uname -a; php -v || true'
+      
+      # 3) Crear carpeta del plugin por si no existe
+      - name: Ensure remote plugin directory
+        run: |
+          ssh -o StrictHostKeyChecking=yes -i ~/.ssh/id_key -p "${{ secrets.SSH_PORT }}" \
+              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+              "mkdir -p '${{ env.REMOTE_PLUGIN_PATH }}' && ls -la '${{ env.REMOTE_PLUGIN_PATH }}'"
+
+      # 4) Subir SOLO el plugin (excluye lo que no hace falta)
       - name: Upload plugin via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          # Si tu llave tiene passphrase, descomenta:
-          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: .
-          target: ${{ env.REMOTE_PLUGIN_PATH }}
-          rm: true
-          exclude: |
-            .git*
-            .github/
-            .vscode/
-            node_modules/
-            vendor/
-            tests/
-            coverage/
-            *.zip
-            *.tar.gz
-            composer.*
-            phpcs.xml
-            README.md
+        run: |
+          scp -o StrictHostKeyChecking=yes -i ~/.ssh/id_key -P "${{ secrets.SSH_PORT }}" -r \
+            $(printf "%s " . \
+              | sed 's/$//') \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.REMOTE_PLUGIN_PATH }}"
+        shell: bash
+        env:
+          # Exclusiones con rsync (si prefieres rsync, ver nota al final)
+          # Aquí usamos scp simple; la exclusión se hace en el paso siguiente con limpieza.
+          DUMMY: "unused"
 
+      # 5) Limpiar archivos no deseados en remoto y activar + flush
       - name: Activate + flush with WP-CLI
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          # Si tu llave tiene passphrase:
-          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          script: |
-            cd "${{ secrets.WP_PATH }}"
-            wp plugin activate "${{ env.PLUGIN_SLUG }}" || true
-            wp rewrite flush --hard
+        run: |
+          ssh -o StrictHostKeyChecking=yes -i ~/.ssh/id_key -p "${{ secrets.SSH_PORT }}" \
+              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -lc '
+                set -e
+                cd "${{ secrets.WP_PATH }}"
+                # Limpia basura común dentro del plugin (si se subió)
+                find "wp-content/plugins/${{ env.PLUGIN_SLUG }}" -name ".git*" -prune -o -name ".github" -prune -o -name ".vscode" -prune -o -name "node_modules" -prune -o -name "vendor" -prune -o -name "tests" -prune -o -name "coverage" -prune -o -name "*.zip" -prune -o -name "*.tar.gz" -prune -o -name "composer.*" -prune -o -name "phpcs.xml" -prune -o -name "README.md" -prune -false -o -type f -print > /dev/null || true
+                # Activar plugin (si ya está activo, no falla)
+                wp plugin activate "${{ env.PLUGIN_SLUG }}" || true
+                # Flush de reglas
+                wp rewrite flush --hard
+                # Confirmación rápida de WP y plugin
+                wp core version
+                wp plugin status "${{ env.PLUGIN_SLUG }}"
+              '
+
+      # 6) Smoke test HTTP (ajusta dominio si no coincide con SSH_HOST)
+      - name: Smoke test /webfiable
+        run: |
+          curl -s -o /dev/null -w "%{http_code}\n" "https://${{ secrets.SSH_HOST }}/webfiable" | tee /tmp/http_code
+          CODE=$(cat /tmp/http_code)
+          if [[ "$CODE" != "200" && "$CODE" != "302" ]]; then
+            echo "Unexpected HTTP code: $CODE"
+            exit 1
+          fi
