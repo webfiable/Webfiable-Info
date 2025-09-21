@@ -3,7 +3,7 @@ Contributors: webfiable
 Tags: security, monitoring, WordPress security
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.4
+Stable tag: 1.4.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
