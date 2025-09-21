@@ -27,7 +27,7 @@ jobs:
       # - run: composer install --no-dev --prefer-dist
 
       - name: Deploy to WordPress.org
-        uses: 10up/action-wordpress-plugin-deploy@2.3.0
+        uses: 10up/action-wordpress-plugin-deploy@stable
         env:
           SVN_USERNAME: ${{ secrets.WPORG_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WPORG_PASSWORD }}
