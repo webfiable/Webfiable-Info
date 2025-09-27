@@ -101,8 +101,6 @@ function webfiable_update_option( $key, $value ) {
 	update_option( $key, $value, false );
 }
 
-
-
 /**
  * Registers the custom rewrite rule for the `webfiable` endpoint.
  *
@@ -182,6 +180,37 @@ function webfiable_admin_menu() {
 add_action( 'admin_menu', 'webfiable_admin_menu' );
 
 /**
+ * Añade enlace "Settings" en la fila del plugin (Pantalla Plugins).
+ *
+ * @param string[] $links Acciones existentes.
+ * @return string[]       Acciones con nuestro enlace al inicio.
+ */
+function webfiable_plugin_action_links( $links ) {
+	$url   = admin_url( 'options-general.php?page=webfiable-info' );
+	$label = esc_html__( 'Settings', 'webfiable-info' );
+	array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . $label . '</a>' );
+	return $links;
+}
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'webfiable_plugin_action_links' );
+
+/**
+ * Enlaces extra bajo el nombre del plugin.
+ *
+ * @param string[] $links Enlaces actuales.
+ * @param string   $file  Basename del plugin.
+ * @return string[]
+ */
+function webfiable_plugin_row_meta( $links, $file ) {
+	if ( plugin_basename( __FILE__ ) !== $file ) {
+		return $links;
+	}
+	$links[] = '<a href="' . esc_url( 'https://webfiable.com/politica-privacidad/' ) . '" target="_blank" rel="noopener">'
+		. esc_html__( 'Privacy', 'webfiable-info' ) . '</a>';
+	return $links;
+}
+add_filter( 'plugin_row_meta', 'webfiable_plugin_row_meta', 10, 2 );
+
+/**
  * Admin notice if the PHP OpenSSL extension is missing.
  *
  * Muestra el aviso tanto en el panel normal como en el panel de red (multisitio),
@@ -209,6 +238,71 @@ function webfiable_admin_notice_openssl() {
 }
 add_action( 'admin_notices', 'webfiable_admin_notice_openssl' );
 add_action( 'network_admin_notices', 'webfiable_admin_notice_openssl' );
+
+/**
+ * Admin notice (solo por sitio) si el plugin no está configurado.
+ *
+ * Muestra advertencia cuando falta: email válido, consentimiento o endpoint habilitado.
+ * No se muestra en el panel de red ni en el user admin.
+ *
+ * @since 1.5.0
+ * @return void
+ */
+function webfiable_admin_notice_incomplete_setup() {
+	// Solo en admin de cada sitio (no network admin / no user admin).
+	if ( is_network_admin() || is_user_admin() ) {
+		return;
+	}
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$email      = webfiable_get_option( 'webfiable_admin_email' );
+	$consent_ts = (int) webfiable_get_option( 'webfiable_consent_ts' );
+	$enabled    = ( webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes' );
+
+	$issues = array();
+	if ( empty( $email ) || ! is_email( $email ) ) {
+		$issues[] = __( 'Add a valid report recipient email.', 'webfiable-info' );
+	}
+	if ( $consent_ts <= 0 ) {
+		$issues[] = __( 'Grant consent to send the site inventory and email to Webfiable.', 'webfiable-info' );
+	}
+	if ( ! $enabled ) {
+		$issues[] = __( 'Enable the public /webfiable endpoint.', 'webfiable-info' );
+	}
+
+	if ( empty( $issues ) ) {
+		return;
+	}
+
+	$settings_url = admin_url( 'options-general.php?page=webfiable-info' );
+	?>
+	<div class="notice notice-warning is-dismissible">
+		<p>
+			<strong><?php esc_html_e( 'Webfiable Info is not fully configured.', 'webfiable-info' ); ?></strong>
+			<?php
+			/* translators: %s: Settings URL. */
+			echo wp_kses(
+				sprintf(
+					/* translators: %s: URL of the Webfiable Info settings page. */
+					__( 'Please complete the setup in <a href="%s">Settings → Webfiable Info</a>.', 'webfiable-info' ),
+					esc_url( $settings_url )
+				),
+				array( 'a' => array( 'href' => true ) )
+			);
+			?>
+		</p>
+		<ul>
+			<?php foreach ( $issues as $msg ) : ?>
+				<li><?php echo esc_html( $msg ); ?></li>
+			<?php endforeach; ?>
+		</ul>
+	</div>
+	<?php
+}
+add_action( 'admin_notices', 'webfiable_admin_notice_incomplete_setup' );
+
 
 /**
  * Render de la página de ajustes (email + consentimiento + toggle endpoint).
@@ -282,7 +376,7 @@ function webfiable_render_settings_page() {
 							$consent_text = sprintf(
 							/* translators: %s: Privacy policy URL. */
 								__( 'I agree to send site inventory and my email to Webfiable to receive reports. See <a href="%s" target="_blank" rel="noopener">Privacy</a>.', 'webfiable-info' ),
-								esc_url( 'https://webfiable.com/privacidad' )
+								esc_url( 'https://webfiable.com/politica-privacidad/' )
 							);
 
 							echo wp_kses(
