@@ -1,0 +1,54 @@
+name: Release to WordPress.org
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'     # publica al crear tags tipo v1.4.0
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Si necesitas compilar (npm/composer), descomenta y ajusta:
+      # - name: Setup Node
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      # - run: npm ci && npm run build
+      #
+      # - name: Setup PHP
+      #   uses: shivammathur/setup-php@v2
+      #   with:
+      #     php-version: '8.2'
+      # - run: composer install --no-dev --prefer-dist
+
+      - name: Deploy to WordPress.org
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.WPORG_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.WPORG_PASSWORD }}
+          SLUG: webfiable-info
+          ASSETS_DIR: .wordpress-org
+          # Si NO usas .distignore, descomenta para excluir:
+          RSYNC_EXCLUDE: >
+            .git/
+            .github/
+            .vscode/
+            node_modules/
+            vendor/
+            tests/
+            coverage/
+            *.zip
+            *.tar.gz
+            composer.json
+            composer.lock
+            package.json
+            package-lock.json
+            webpack.config.js
+            phpcs.xml
+            phpunit.xml
+            README.md
