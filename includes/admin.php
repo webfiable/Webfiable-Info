@@ -8,8 +8,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; }
 
-add_action( 'admin_menu', 'webfiable_admin_menu' );
-
 /**
  * Add "Settings" action link in the Plugins list row.
  *
@@ -112,6 +110,28 @@ function webfiable_admin_notice_incomplete_setup() {
 	<?php
 }
 add_action( 'admin_notices', 'webfiable_admin_notice_incomplete_setup' );
+
+// Settings page registration.
+if ( ! function_exists( 'webfiable_admin_menu' ) ) {
+	/**
+	 * Registers the Webfiable Info settings page under Settings.
+	 *
+	 * Adds an options page visible to users with the `manage_options` capability.
+	 *
+	 * @since 1.5.0
+	 * @return void
+	 */
+	function webfiable_admin_menu() {
+		add_options_page(
+			__( 'Webfiable Info', 'webfiable-info' ),
+			__( 'Webfiable Info', 'webfiable-info' ),
+			'manage_options',
+			'webfiable-info',
+			'webfiable_render_settings_page'
+		);
+	}
+}
+add_action( 'admin_menu', 'webfiable_admin_menu' );
 
 /**
  * Settings page (render + save).
