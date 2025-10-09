@@ -8,6 +8,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; }
 
+add_action( 'admin_menu', 'webfiable_admin_menu' );
+
 /**
  * Add "Settings" action link in the Plugins list row.
  *
