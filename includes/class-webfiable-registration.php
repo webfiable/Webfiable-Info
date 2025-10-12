@@ -2,8 +2,8 @@
 /**
  * Webfiable Info — Registration-on-save handler.
  *
- * @package   Webfiable_Info
- * @license   GPL-2.0-or-later
+ * @package Webfiable_Info
+ * @license GPL-2.0-or-later
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -24,7 +24,7 @@ final class Webfiable_Registration {
 	const OPTION = 'webfiable_info_settings';
 
 	/**
-	 * Settings group slug used by your existing settings_errors() calls.
+	 * Settings group slug used for admin notices.
 	 *
 	 * @var string
 	 */
@@ -46,7 +46,13 @@ final class Webfiable_Registration {
 		// Intercept the settings save; can veto by returning $old.
 		add_filter( 'pre_update_option_' . self::OPTION, array( __CLASS__, 'maybe_register' ), 10, 3 );
 
-		// Ensure our notices show (harmless if your page already calls settings_errors()).
+		// Multisite network option variant (if the plugin uses site options).
+		add_filter( 'pre_update_site_option_' . self::OPTION, array( __CLASS__, 'maybe_register_ms' ), 10, 4 );
+
+		// Normalization pass (runs even if register_setting is elsewhere).
+		add_filter( 'sanitize_option_' . self::OPTION, array( __CLASS__, 'sanitize_submission' ), 10, 3 );
+
+		// Ensure notices are printed (harmless if your page already calls settings_errors()).
 		add_action(
 			'admin_notices',
 			static function () {
@@ -59,17 +65,64 @@ final class Webfiable_Registration {
 	}
 
 	/**
-	 * Intercept settings save. If proxy returns true, allow save; otherwise keep old values.
+	 * Normalize the incoming array (keeps keys we rely on).
+	 *
+	 * @param mixed  $value    Incoming value from the form.
+	 * @param string $option   Option name.
+	 * @param mixed  $original Original (unsanitized) value.
+	 * @return mixed Normalized value.
+	 */
+	public static function sanitize_submission( $value, $option, $original ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+
+		if ( isset( $value['admin_email'] ) ) {
+			$value['admin_email'] = sanitize_email( $value['admin_email'] );
+		}
+		if ( isset( $value['proxy_url'] ) ) {
+			$value['proxy_url'] = esc_url_raw( $value['proxy_url'] );
+		}
+		if ( isset( $value['consent'] ) ) {
+			$value['consent'] = ! empty( $value['consent'] ) ? 1 : 0;
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Single-site: veto or allow option update.
 	 *
 	 * @param mixed  $new_value New (unsaved) option value from the settings form.
 	 * @param mixed  $old_value Existing value in the DB.
-	 * @param string $option    Option name (self::OPTION).
+	 * @param string $option    Option name.
 	 * @return mixed The value that will be saved (or the old value to veto).
 	 */
-	public static function maybe_register( $new_value, $old_value, $option ) {
-		// Unused but required by the filter signature.
-		unset( $option ); // phpcs:ignore VariableAnalysis.UnusedFunctionParameter
+	public static function maybe_register( $new_value, $old_value, $option ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		return self::run_registration_gate( $new_value, $old_value );
+	}
 
+	/**
+	 * Multisite: veto or allow network site-option update.
+	 *
+	 * @param mixed  $new_value New value.
+	 * @param mixed  $old_value Old value.
+	 * @param string $option    Option name.
+	 * @param int    $network_id Network id.
+	 * @return mixed The value that will be saved (or the old value to veto).
+	 */
+	public static function maybe_register_ms( $new_value, $old_value, $option, $network_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		return self::run_registration_gate( $new_value, $old_value );
+	}
+
+	/**
+	 * Core logic shared by both single-site and multisite flows.
+	 *
+	 * @param mixed $new_value New (unsaved) array.
+	 * @param mixed $old_value Old array.
+	 * @return mixed New array if success; old array to veto save otherwise.
+	 */
+	private static function run_registration_gate( $new_value, $old_value ) {
 		$new = is_array( $new_value ) ? $new_value : array();
 		$old = is_array( $old_value ) ? $old_value : array();
 
@@ -107,7 +160,7 @@ final class Webfiable_Registration {
 
 		$payload = array(
 			'siteId'     => $site_id,
-			'siteUrl'    => home_url(), // must match what your API verifies.
+			'siteUrl'    => home_url(), // Must match what your API verifies.
 			'adminEmail' => $admin_email,
 		);
 
@@ -126,7 +179,7 @@ final class Webfiable_Registration {
 				self::GROUP,
 				'proxy_net',
 				sprintf(
-					/* translators: %s: error message */
+					/* translators: %s: error message. */
 					esc_html__( 'Registration failed (network): %s', 'webfiable-info' ),
 					esc_html( $response->get_error_message() )
 				),
@@ -154,8 +207,8 @@ final class Webfiable_Registration {
 		$new['registered']       = 1;
 		$new['registered_at']    = current_time( 'mysql' );
 		$new['last_reg_attempt'] = current_time( 'mysql' );
-		$new['proxy_url']        = $proxy_base; // keep persisted if present.
-		$new['site_id']          = $site_id;    // ensure we never drop it.
+		$new['proxy_url']        = $proxy_base; // Keep persisted if present.
+		$new['site_id']          = $site_id;    // Ensure we never drop it.
 
 		add_settings_error( self::GROUP, 'proxy_success', esc_html__( 'Registration completed successfully.', 'webfiable-info' ), 'updated' );
 
