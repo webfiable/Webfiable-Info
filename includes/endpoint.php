@@ -53,7 +53,7 @@ function webfiable_template_redirect() {
 		// 1–2 requests per minute per IP.
 		$key   = 'webfiable_rl_' . md5( $ip );
 		$count = (int) get_transient( $key );
-		if ( $count >= 2 ) {
+		if ( $count >= 5 ) {
 			status_header( 429 );
 			wp_send_json( array( 'error' => 'rate_limited' ) );
 		}

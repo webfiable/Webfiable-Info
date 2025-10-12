@@ -3,7 +3,7 @@
  * Plugin Name: Webfiable Info
  * Plugin URI: https://wordpress.org/plugins/webfiable-info/
  * Description: Ensure your website's security posture and configuration health with monitoring and recommendations.
- * Version: 1.5.0
+ * Version: 2.0.0
  * Author: Webfiable Team
  * Author URI: https://webfiable.com
  * License: GPLv3 or later
@@ -30,6 +30,10 @@ require_once WEBFIABLE_PLUGIN_DIR . 'includes/options.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/admin.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/routing.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/endpoint.php';
+require_once WEBFIABLE_PLUGIN_DIR . 'includes/class-webfiable-registration.php';
+Webfiable_Registration::init();
+
+
 
 /** Register activation/deactivation hooks provided by routing.php */
 register_activation_hook( __FILE__, 'webfiable_activate' );
