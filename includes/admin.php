@@ -140,7 +140,9 @@ function webfiable_render_settings_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return; }
 
-	$notice = '';
+	$notice      = '';
+	$notice_type = 'success';
+
 	if ( isset( $_POST['webfiable_save_settings'] ) && check_admin_referer( 'webfiable_save_settings' ) ) {
 		$email   = isset( $_POST['webfiable_admin_email'] ) ? sanitize_email( wp_unslash( $_POST['webfiable_admin_email'] ) ) : '';
 		$consent = isset( $_POST['webfiable_consent'] ) ? 'yes' : 'no';
@@ -148,9 +150,11 @@ function webfiable_render_settings_page() {
 
 		// 1) Validate input first.
 		if ( 'yes' !== $consent ) {
-			$notice = __( 'You must accept the consent to register.', 'webfiable-info' );
+			$notice      = __( 'You must accept the consent to register.', 'webfiable-info' );
+			$notice_type = 'error';
 		} elseif ( empty( $email ) || ! is_email( $email ) ) {
-			$notice = __( 'Invalid email address.', 'webfiable-info' );
+			$notice      = __( 'Invalid email address.', 'webfiable-info' );
+			$notice_type = 'error';
 		} else {
 			// 2) Ensure a site ID exists.
 			$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
@@ -163,14 +167,16 @@ function webfiable_render_settings_page() {
 			$ok = webfiable_attempt_registration( $site_id, home_url(), strtolower( $email ), 'https://webfiable.com' );
 
 			if ( ! $ok ) {
-				$notice = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
+				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
+				$notice_type = 'error';
 			} else {
 				// 4) Success → persist options.
 				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
 				webfiable_update_option( 'webfiable_consent_ts', time() );
 				webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
-				$notice = __( 'Settings saved and registration completed.', 'webfiable-info' );
+				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
+				$notice_type = 'success';
 			}
 		}
 	}
@@ -187,9 +193,12 @@ function webfiable_render_settings_page() {
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Webfiable Info', 'webfiable-info' ); ?></h1>
 
-		<?php if ( ! empty( $notice ) ) : ?>
-			<div class="notice notice-success"><p><?php echo esc_html( $notice ); ?></p></div>
-		<?php endif; ?>
+	<?php if ( ! empty( $notice ) ) : ?>
+	<div class="notice notice-<?php echo esc_attr( $notice_type ); ?>">
+		<p><?php echo esc_html( $notice ); ?></p>
+	</div>
+	<?php endif; ?>
+
 
 		<form method="post">
 			<?php wp_nonce_field( 'webfiable_save_settings' ); ?>
