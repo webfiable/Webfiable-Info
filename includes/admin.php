@@ -146,23 +146,32 @@ function webfiable_render_settings_page() {
 		$consent = isset( $_POST['webfiable_consent'] ) ? 'yes' : 'no';
 		$enable  = isset( $_POST['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
 
-		if ( ! empty( $email ) && is_email( $email ) ) {
-			webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
-		} else {
+		// 1) Validate input first.
+		if ( 'yes' !== $consent ) {
+			$notice = __( 'You must accept the consent to register.', 'webfiable-info' );
+		} elseif ( empty( $email ) || ! is_email( $email ) ) {
 			$notice = __( 'Invalid email address.', 'webfiable-info' );
-		}
+		} else {
+			// 2) Ensure a site ID exists.
+			$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
+			if ( '' === $site_id ) {
+				$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : wp_generate_password( 36, false );
+				webfiable_update_option( 'webfiable_site_id', $site_id );
+			}
 
-		if ( 'yes' === $consent && (int) webfiable_get_option( 'webfiable_consent_ts' ) <= 0 ) {
-			webfiable_update_option( 'webfiable_consent_ts', time() );
-		}
-		if ( 'no' === $consent ) {
-			webfiable_update_option( 'webfiable_consent_ts', 0 );
-		}
+			// 3) Attempt registration via your WP proxy.
+			$ok = webfiable_attempt_registration( $site_id, home_url(), strtolower( $email ), 'https://webfiable.com' );
 
-		webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
+			if ( ! $ok ) {
+				$notice = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
+			} else {
+				// 4) Success → persist options.
+				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
+				webfiable_update_option( 'webfiable_consent_ts', time() );
+				webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
-		if ( empty( $notice ) ) {
-			$notice = __( 'Settings saved.', 'webfiable-info' );
+				$notice = __( 'Settings saved and registration completed.', 'webfiable-info' );
+			}
 		}
 	}
 
