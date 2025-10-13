@@ -191,8 +191,8 @@ function webfiable_render_settings_page() {
 
 			if ( ! $ok ) {
 				// Revert local writes to honor "only save if all checks pass".
-				webfiable_update_option( 'webfiable_admin_email', $prev_email );
-				webfiable_update_option( 'webfiable_consent_ts', $prev_consentts );
+				// webfiable_update_option( 'webfiable_admin_email', $prev_email );
+				// webfiable_update_option( 'webfiable_consent_ts', $prev_consentts );.
 
 				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
 				$notice_type = 'error';
