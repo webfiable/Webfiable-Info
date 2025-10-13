@@ -21,8 +21,8 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 		return false;
 	}
 
-	$site_url    = untrailingslashit( (string) $site_url );     // match API’s normalization.
-	$admin_email = strtolower( (string) $admin_email );         // consistent with your DB/email normalize.
+	$site_url    = untrailingslashit( (string) $site_url );
+	$admin_email = strtolower( (string) $admin_email );
 
 	$endpoint = trailingslashit( untrailingslashit( $proxy_base ) ) . 'wp-json/webfiable/v1/activations';
 
@@ -40,14 +40,15 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 
 	$response = wp_remote_post( $endpoint, $args );
 
-	// Optional diagnostics (only if WP_DEBUG_LOG true).
+	// DEBUG (only if WP_DEBUG_LOG enabled).
 	if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+		error_log( '[Webfiable] payload=' . wp_json_encode( $payload ) );
 		if ( is_wp_error( $response ) ) {
 			error_log( '[Webfiable] proxy error: ' . $response->get_error_message() );
 		} else {
 			$code = (int) wp_remote_retrieve_response_code( $response );
 			$body = wp_remote_retrieve_body( $response );
-			error_log( '[Webfiable] proxy reply: code=' . $code . ' body=' . $body );
+			error_log( '[Webfiable] proxy reply: code=' . $code . ' body=' . trim( (string) $body ) );
 		}
 	}
 
@@ -58,9 +59,10 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 	$code = (int) wp_remote_retrieve_response_code( $response );
 	$body = wp_remote_retrieve_body( $response );
 
-	// Proxy returns JSON boolean true/false; some deployments may still set 2xx.
+	// Accept JSON true, or a raw "true" (with/without newline/quotes).
 	$json    = json_decode( $body, true );
-	$success = ( true === $json ) || ( $code >= 200 && $code < 300 && 'true' === trim( (string) $body ) );
+	$trimmed = strtolower( trim( (string) $body ) );
+	$success = ( true === $json ) || ( 'true' === $trimmed );
 
 	return $success;
 }

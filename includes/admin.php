@@ -164,7 +164,12 @@ function webfiable_render_settings_page() {
 			}
 
 			// 3) Attempt registration via your WP proxy.
-			$ok = webfiable_attempt_registration( $site_id, home_url(), strtolower( $email ), 'https://webfiable.com' );
+			$ok = webfiable_attempt_registration(
+				(string) webfiable_get_option( 'webfiable_site_id' ),
+				'https://webfiable.com',                    // hard-code for a quick test
+				strtolower( $email ),
+				'https://webfiable.com'                     // your proxy base
+			);
 
 			if ( ! $ok ) {
 				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
