@@ -165,14 +165,15 @@ function webfiable_render_settings_page() {
 				$notice_type = 'error';
 
 			} else {
+				// --- Read previous values BEFORE saving new ones ---
+				$prev_email     = (string) get_option( 'webfiable_admin_email', '' );
+				$prev_consented = (int) get_option( 'webfiable_consent_ts', 0 ) > 0;
+
 				// 3) Persist consent + email FIRST so /webfiable endpoint passes its own checks.
 				webfiable_update_option( 'webfiable_consent_ts', time() );
 				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
 
-				// 4) Decide if a proxy call is actually needed.
-				$prev_email     = (string) get_option( 'webfiable_admin_email', '' );
-				$prev_consented = (int) get_option( 'webfiable_consent_ts', 0 ) > 0;
-
+				// Decide if we need to call the proxy based on the *previous* state.
 				$needs_registration = ( ! $prev_consented ) || ( strtolower( $prev_email ) !== strtolower( $email ) );
 
 				$ok = true;
