@@ -40,6 +40,16 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 
 	$response = wp_remote_post( $endpoint, $args );
 
+	if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+		if ( is_wp_error( $response ) ) {
+			error_log( '[Webfiable] proxy error: ' . $response->get_error_message() );
+		} else {
+			$code = (int) wp_remote_retrieve_response_code( $response );
+			$body = wp_remote_retrieve_body( $response );
+			error_log( '[Webfiable] proxy reply: code=' . $code . ' body=' . trim( (string) $body ) );
+		}
+	}
+
 	if ( is_wp_error( $response ) ) {
 		return false;
 	}
