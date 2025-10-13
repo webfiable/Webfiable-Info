@@ -163,17 +163,23 @@ function webfiable_render_settings_page() {
 				webfiable_update_option( 'webfiable_site_id', $site_id );
 			}
 
-			// Read previous values to decide if we need to call the proxy.
+			// Save local choices first so /webfiable reflects them.
 			$prev_email     = (string) webfiable_get_option( 'webfiable_admin_email' );
-			$prev_consented = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
-			$prev_site_id   = (string) webfiable_get_option( 'webfiable_site_id' );
+			$prev_consentts = (int) webfiable_get_option( 'webfiable_consent_ts' );
 
+			webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
+			webfiable_update_option( 'webfiable_consent_ts', time() );
+
+			// Decide if we need to call the proxy.
+			$prev_consented     = $prev_consentts > 0;
+			$prev_site_id       = (string) webfiable_get_option( 'webfiable_site_id' );
 			$needs_registration =
 			( $prev_site_id !== $site_id ) ||
 			( strtolower( $prev_email ) !== strtolower( $email ) ) ||
 			( ! $prev_consented && 'yes' === $consent );
 
-			$ok = true; // default to success when no registration is needed.
+			// Default to success when no registration is needed.
+			$ok = true;
 			if ( $needs_registration ) {
 				$ok = webfiable_attempt_registration(
 					$site_id,
@@ -183,21 +189,15 @@ function webfiable_render_settings_page() {
 				);
 			}
 
-			// 3) Attempt registration via your WP proxy.
-			$ok = webfiable_attempt_registration(
-				(string) webfiable_get_option( 'webfiable_site_id' ),
-				untrailingslashit( home_url() ),
-				strtolower( $email ),
-				'https://webfiable.com'
-			);
-
 			if ( ! $ok ) {
+				// Revert local writes to honor "only save if all checks pass".
+				webfiable_update_option( 'webfiable_admin_email', $prev_email );
+				webfiable_update_option( 'webfiable_consent_ts', $prev_consentts );
+
 				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
 				$notice_type = 'error';
 			} else {
-				// 4) Success → persist options.
-				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
-				webfiable_update_option( 'webfiable_consent_ts', time() );
+				// Success → persist endpoint toggle and set success notice.
 				webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
 				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
