@@ -148,92 +148,58 @@ function webfiable_render_settings_page() {
 		$consent = isset( $_POST['webfiable_consent'] ) ? 'yes' : 'no';
 		$enable  = isset( $_POST['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
 
-		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( '[Webfiable][SAVE] incoming: email=' . $email . ' consent=' . $consent . ' enable=' . $enable );
-		}
-
-		// 1) Validate input.
+		// 1) Input validation.
 		if ( 'yes' !== $consent ) {
 			$notice      = __( 'You must accept the consent to register.', 'webfiable-info' );
 			$notice_type = 'error';
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				error_log( '[Webfiable][SAVE] abort: consent not granted' );
-			}
+
 		} elseif ( empty( $email ) || ! is_email( $email ) ) {
 			$notice      = __( 'Invalid email address.', 'webfiable-info' );
 			$notice_type = 'error';
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				error_log( '[Webfiable][SAVE] abort: invalid email' );
-			}
+
 		} else {
-			// 2) Ensure site_id exists (do NOT regenerate if present).
+			// 2) site_id must exist (set on activation). If missing, ask admin to re-activate the plugin.
 			$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
 			if ( '' === $site_id ) {
-				$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : wp_generate_password( 36, false );
-				webfiable_update_option( 'webfiable_site_id', $site_id );
-				if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-					error_log( '[Webfiable][SAVE] site_id generated=' . $site_id );
-				}
-			} elseif ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-					error_log( '[Webfiable][SAVE] site_id existing=' . $site_id );
-			}
-
-			// 3) Persist consent immediately (do not roll this back).
-			if ( 'yes' === $consent ) {
-				$prev_ts = (int) webfiable_get_option( 'webfiable_consent_ts' );
-				webfiable_update_option( 'webfiable_consent_ts', time() );
-				if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-					error_log( '[Webfiable][SAVE] consent_ts prev=' . $prev_ts . ' new=' . webfiable_get_option( 'webfiable_consent_ts' ) );
-				}
-			}
-
-			// 4) Determine if we need to call the proxy.
-			$prev_email     = (string) webfiable_get_option( 'webfiable_admin_email' );
-			$prev_consented = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
-
-			$needs_registration = ( ! $prev_consented ) || ( strtolower( $prev_email ) !== strtolower( $email ) );
-
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				error_log(
-					'[Webfiable][SAVE] prev_email=' . $prev_email .
-					' prev_consented=' . ( $prev_consented ? '1' : '0' ) .
-					' needs_registration=' . ( $needs_registration ? '1' : '0' )
-				);
-			}
-
-			$ok = true;
-			if ( $needs_registration ) {
-				$ok = webfiable_attempt_registration(
-					$site_id,
-					untrailingslashit( home_url() ),
-					strtolower( $email ),
-					'https://webfiable.com'
-				);
-				if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-					error_log( '[Webfiable][SAVE] proxy result ok=' . ( $ok ? 'true' : 'false' ) );
-				}
-			}
-
-			if ( ! $ok ) {
-				// Keep consent; do NOT change email/endpoint on failure.
-				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
+				$notice      = __( 'Site ID is missing. Please deactivate and activate the plugin again.', 'webfiable-info' );
 				$notice_type = 'error';
-				if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-					error_log( '[Webfiable][SAVE] FAIL: not saving email/endpoint' );
-				}
-			} else {
-				// 5) Success → persist email + endpoint.
-				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
-				webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
-				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
-				$notice_type = 'success';
-				if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-					error_log( '[Webfiable][SAVE] SUCCESS: email/endpoint saved' );
+			} else {
+				// 3) Persist consent + email FIRST so /webfiable endpoint passes its own checks.
+				webfiable_update_option( 'webfiable_consent_ts', time() );
+				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
+
+				// 4) Decide if a proxy call is actually needed.
+				$prev_email     = (string) get_option( 'webfiable_admin_email', '' );
+				$prev_consented = (int) get_option( 'webfiable_consent_ts', 0 ) > 0;
+
+				$needs_registration = ( ! $prev_consented ) || ( strtolower( $prev_email ) !== strtolower( $email ) );
+
+				$ok = true;
+				if ( $needs_registration ) {
+					$ok = webfiable_attempt_registration(
+						$site_id,
+						untrailingslashit( home_url() ),
+						strtolower( $email ),
+						'https://webfiable.com'
+					);
+				}
+
+				if ( ! $ok ) {
+					// Keep consent+email (endpoint relies on them). Only the endpoint toggle is not saved.
+					$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
+					$notice_type = 'error';
+				} else {
+					// 5) Success → save the endpoint toggle.
+					webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
+
+					$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
+					$notice_type = 'success';
 				}
 			}
 		}
 	}
+
 	$site_id = webfiable_get_option( 'webfiable_site_id' );
 	$email   = webfiable_get_option( 'webfiable_admin_email' );
 	if ( empty( $email ) ) {
