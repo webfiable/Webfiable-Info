@@ -148,7 +148,7 @@ function webfiable_render_settings_page() {
 		$consent = isset( $_POST['webfiable_consent'] ) ? 'yes' : 'no';
 		$enable  = isset( $_POST['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
 
-		// 1) Validate input first.
+		// 1) Validate input.
 		if ( 'yes' !== $consent ) {
 			$notice      = __( 'You must accept the consent to register.', 'webfiable-info' );
 			$notice_type = 'error';
@@ -156,29 +156,26 @@ function webfiable_render_settings_page() {
 			$notice      = __( 'Invalid email address.', 'webfiable-info' );
 			$notice_type = 'error';
 		} else {
-			// 2) Ensure a site ID exists.
+			// 2) Ensure site_id exists (do NOT regenerate if present).
 			$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
 			if ( '' === $site_id ) {
 				$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : wp_generate_password( 36, false );
 				webfiable_update_option( 'webfiable_site_id', $site_id );
 			}
 
-			// Save local choices first so /webfiable reflects them.
+			// 3) Persist consent immediately (legal acknowledgement) so /webfiable sees it.
+			// Do not roll this back if anything fails later.
+			if ( 'yes' === $consent ) {
+				webfiable_update_option( 'webfiable_consent_ts', time() );
+			}
+
+			// 4) Decide if we actually need to call the proxy.
 			$prev_email     = (string) webfiable_get_option( 'webfiable_admin_email' );
-			$prev_consentts = (int) webfiable_get_option( 'webfiable_consent_ts' );
+			$prev_consented = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
 
-			webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
-			webfiable_update_option( 'webfiable_consent_ts', time() );
-
-			// Decide if we need to call the proxy.
-			$prev_consented     = $prev_consentts > 0;
-			$prev_site_id       = (string) webfiable_get_option( 'webfiable_site_id' );
 			$needs_registration =
-			( $prev_site_id !== $site_id ) ||
-			( strtolower( $prev_email ) !== strtolower( $email ) ) ||
-			( ! $prev_consented && 'yes' === $consent );
+			! $prev_consented || ( strtolower( $prev_email ) !== strtolower( $email ) );
 
-			// Default to success when no registration is needed.
 			$ok = true;
 			if ( $needs_registration ) {
 				$ok = webfiable_attempt_registration(
@@ -190,14 +187,12 @@ function webfiable_render_settings_page() {
 			}
 
 			if ( ! $ok ) {
-				// Revert local writes to honor "only save if all checks pass".
-				// webfiable_update_option( 'webfiable_admin_email', $prev_email );
-				// webfiable_update_option( 'webfiable_consent_ts', $prev_consentts );.
-
+				// Keep consent; do NOT change email/endpoint on failure.
 				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
 				$notice_type = 'error';
 			} else {
-				// Success → persist endpoint toggle and set success notice.
+				// 5) Success → persist email + endpoint.
+				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
 				webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
 				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
