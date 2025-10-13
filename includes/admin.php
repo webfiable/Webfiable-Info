@@ -163,6 +163,13 @@ function webfiable_render_settings_page() {
 				webfiable_update_option( 'webfiable_site_id', $site_id );
 			}
 
+			/* >>> ADD THESE LINES <<< */
+			$site_url_raw = home_url();
+			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				error_log( '[Webfiable] home_url()=' . $site_url_raw );
+			}
+			/* >>> END <<< */
+
 			// 3) Attempt registration via your WP proxy.
 			$ok = webfiable_attempt_registration(
 				(string) webfiable_get_option( 'webfiable_site_id' ),
