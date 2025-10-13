@@ -163,12 +163,25 @@ function webfiable_render_settings_page() {
 				webfiable_update_option( 'webfiable_site_id', $site_id );
 			}
 
-			/* >>> ADD THESE LINES <<< */
-			$site_url_raw = home_url();
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				error_log( '[Webfiable] home_url()=' . $site_url_raw );
+			// Read previous values to decide if we need to call the proxy.
+			$prev_email     = (string) webfiable_get_option( 'webfiable_admin_email' );
+			$prev_consented = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
+			$prev_site_id   = (string) webfiable_get_option( 'webfiable_site_id' );
+
+			$needs_registration =
+			( $prev_site_id !== $site_id ) ||
+			( strtolower( $prev_email ) !== strtolower( $email ) ) ||
+			( ! $prev_consented && 'yes' === $consent );
+
+			$ok = true; // default to success when no registration is needed.
+			if ( $needs_registration ) {
+				$ok = webfiable_attempt_registration(
+					$site_id,
+					untrailingslashit( home_url() ),
+					strtolower( $email ),
+					'https://webfiable.com'
+				);
 			}
-			/* >>> END <<< */
 
 			// 3) Attempt registration via your WP proxy.
 			$ok = webfiable_attempt_registration(
@@ -177,9 +190,6 @@ function webfiable_render_settings_page() {
 				strtolower( $email ),
 				'https://webfiable.com'
 			);
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				error_log( '[Webfiable] registration $ok=' . ( $ok ? 'true' : 'false' ) );
-			}
 
 			if ( ! $ok ) {
 				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
