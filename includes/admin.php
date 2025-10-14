@@ -143,6 +143,13 @@ function webfiable_render_settings_page() {
 	$notice      = '';
 	$notice_type = 'success';
 
+	// Handle a legitimate settings form submission:
+	// - Verify nonce 'webfiable_save_settings' to prevent CSRF.
+	// - Read posted fields and normalize them:
+	// • $email: sanitize the submitted email (empty string if missing).
+	// • $consent: map checkbox presence to 'yes'/'no'.
+	// • $enable: map endpoint toggle checkbox to 'yes'/'no'.
+
 	if ( isset( $_POST['webfiable_save_settings'] ) && check_admin_referer( 'webfiable_save_settings' ) ) {
 		$email   = isset( $_POST['webfiable_admin_email'] ) ? sanitize_email( wp_unslash( $_POST['webfiable_admin_email'] ) ) : '';
 		$consent = isset( $_POST['webfiable_consent'] ) ? 'yes' : 'no';
@@ -169,9 +176,14 @@ function webfiable_render_settings_page() {
 				$prev_email     = (string) get_option( 'webfiable_admin_email', '' );
 				$prev_consented = (int) get_option( 'webfiable_consent_ts', 0 ) > 0;
 
-				// 3) Persist consent + email FIRST so /webfiable endpoint passes its own checks.
+				// 3) Persist state FIRST so /webfiable passes its own prechecks.
+				// We write consent, email, and endpoint toggle now (and we do not roll them back).
+				// Rationale: the public /webfiable endpoint requires endpoint_enabled === 'yes'
+				// AND a valid admin_email AND consent_ts > 0. Saving these here ensures the
+				// proxy’s verification can succeed on the first submit.
 				webfiable_update_option( 'webfiable_consent_ts', time() );
 				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
+				webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
 				// Decide if we need to call the proxy based on the *previous* state.
 				$needs_registration = ( ! $prev_consented ) || ( strtolower( $prev_email ) !== strtolower( $email ) );
