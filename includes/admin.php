@@ -148,10 +148,25 @@ function webfiable_render_settings_page() {
 	$notice_type = 'success';
 
 	// Handle submit.
-	if ( isset( $_POST['webfiable_save_settings'] ) && check_admin_referer( 'webfiable_save_settings' ) ) {
-		$email   = isset( $_POST['webfiable_admin_email'] ) ? sanitize_email( wp_unslash( $_POST['webfiable_admin_email'] ) ) : '';
-		$consent = isset( $_POST['webfiable_consent'] ) ? 'yes' : 'no';
-		$enable  = isset( $_POST['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
+	$post_data = filter_input_array(
+		INPUT_POST,
+		array(
+			'webfiable_save_settings'    => FILTER_DEFAULT,
+			'webfiable_admin_email'      => FILTER_UNSAFE_RAW,
+			'webfiable_consent'          => FILTER_DEFAULT,
+			'webfiable_endpoint_enabled' => FILTER_DEFAULT,
+		)
+	);
+	if ( ! is_array( $post_data ) ) {
+		$post_data = array();
+	}
+
+	if ( isset( $post_data['webfiable_save_settings'] ) && check_admin_referer( 'webfiable_save_settings' ) ) {
+		$raw_email_value = isset( $post_data['webfiable_admin_email'] ) ? $post_data['webfiable_admin_email'] : '';
+		$raw_email       = is_string( $raw_email_value ) ? wp_unslash( $raw_email_value ) : '';
+		$email           = sanitize_email( $raw_email );
+		$consent         = isset( $post_data['webfiable_consent'] ) ? 'yes' : 'no';
+		$enable          = isset( $post_data['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
 
 		// Basic validation.
 		if ( 'yes' !== $consent ) {
@@ -162,56 +177,84 @@ function webfiable_render_settings_page() {
 			$notice_type = 'error';
 		} else {
 			// Ensure we have a site ID (normally set on activation).
-			$site_id = (string) get_option( 'webfiable_site_id', '' );
+			$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
 			if ( '' === $site_id ) {
-				$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : wp_generate_password( 36, false );
-				update_option( 'webfiable_site_id', $site_id, false );
+				$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'wf_', true );
+				webfiable_update_option( 'webfiable_site_id', $site_id );
 			}
 
-			// Save state FIRST so the /webfiable endpoint passes its own checks.
-			update_option( 'webfiable_consent_ts', time(), false );
-			update_option( 'webfiable_admin_email', strtolower( $email ), false );
-			update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ), false );
+			// Persist state so the endpoint reflects the new values immediately.
+			webfiable_update_option( 'webfiable_consent_ts', time() );
+			webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
+			webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
-			// (Optional but harmless) warm the endpoint once to avoid cache timing edges.
-			wp_remote_get(
-				home_url( '/' . WEBFIABLE_ENDPOINT_SLUG ),
-				array(
-					'timeout' => 5,
-					'headers' => array(
-						'Cache-Control' => 'no-cache',
-						'Pragma'        => 'no-cache',
-					),
-				)
-			);
+			$endpoint_ready = true;
+			if ( 'yes' === $enable ) {
+				$verify_url = add_query_arg(
+					array( '_wf' => (string) wp_rand( 1000, 9999 ) ),
+					home_url( '/' . WEBFIABLE_ENDPOINT_SLUG )
+				);
+				$verify     = wp_remote_get(
+					$verify_url,
+					array(
+						'timeout' => 10,
+						'headers' => array(
+							'Cache-Control' => 'no-cache, no-store, must-revalidate',
+							'Pragma'        => 'no-cache',
+							'Expires'       => '0',
+						),
+					)
+				);
 
-			// Always call the proxy (simple and predictable).
-			$ok = webfiable_attempt_registration(
-				$site_id,
-				untrailingslashit( home_url() ),
-				strtolower( $email ),
-				'https://webfiable.com'
-			);
+				$endpoint_ready = false;
+				if ( ! is_wp_error( $verify ) ) {
+					$code = (int) wp_remote_retrieve_response_code( $verify );
+					if ( 200 === $code ) {
+						$body           = wp_remote_retrieve_body( $verify );
+						$json           = json_decode( (string) $body, true );
+						$endpoint_ready = is_array( $json ) && isset( $json['encrypted_key'], $json['iv'], $json['data'] );
+					}
+				}
 
-			if ( $ok ) {
-				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
+				if ( ! $endpoint_ready ) {
+					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+					$enable      = 'no';
+					$notice      = __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
+					$notice_type = 'error';
+				}
+			}
+
+			if ( 'yes' === $enable ) {
+				$registered = webfiable_attempt_registration(
+					$site_id,
+					untrailingslashit( home_url() ),
+					strtolower( $email ),
+					'https://webfiable.com'
+				);
+
+				if ( $registered ) {
+					$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
+					$notice_type = 'success';
+				} else {
+					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+					$notice      = __( 'Registration failed; the endpoint has been disabled as a safeguard. Please try again later.', 'webfiable-info' );
+					$notice_type = 'error';
+				}
+			} elseif ( '' === $notice ) {
+				$notice      = __( 'Settings saved.', 'webfiable-info' );
 				$notice_type = 'success';
-			} else {
-				// Settings remain saved; only registration failed.
-				$notice      = __( 'Settings saved, but registration could not be completed now. Please try again later.', 'webfiable-info' );
-				$notice_type = 'error';
 			}
 		}
 	}
 
 	// Current values for rendering.
-	$site_id = get_option( 'webfiable_site_id', '' );
-	$email   = get_option( 'webfiable_admin_email', '' );
+	$site_id = webfiable_get_option( 'webfiable_site_id' );
+	$email   = webfiable_get_option( 'webfiable_admin_email' );
 	if ( empty( $email ) ) {
 		$email = get_option( 'admin_email' );
 	}
-	$consented    = (int) get_option( 'webfiable_consent_ts', 0 ) > 0;
-	$enabled      = ( get_option( 'webfiable_endpoint_enabled', 'no' ) === 'yes' );
+	$consented    = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
+	$enabled      = ( webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes' );
 	$endpoint_url = home_url( '/' . WEBFIABLE_ENDPOINT_SLUG );
 	?>
 	<div class="wrap">
@@ -244,6 +287,7 @@ function webfiable_render_settings_page() {
 							<?php
 							echo wp_kses(
 								sprintf(
+									/* translators: 1: Privacy policy URL. */
 									__( 'I agree to send site inventory and my email to Webfiable to receive reports. See <a href="%s" target="_blank" rel="noopener">Privacy</a>.', 'webfiable-info' ),
 									esc_url( 'https://webfiable.com/politica-privacidad/' )
 								),
