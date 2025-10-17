@@ -141,10 +141,9 @@ function webfiable_render_settings_page() {
 		return;
 	}
 
-	// ---------- POST: handle save, then redirect (PRG) ----------
+	/* ---------- POST: save, then redirect (PRG) ---------- */
 	if ( isset( $_POST['webfiable_save_settings'] ) && check_admin_referer( 'webfiable_save_settings' ) ) {
-		// Handle a legitimate settings form submission:
-		// - Normalize input and treat unchecked checkboxes as 'no'.
+		// Normalize input. Unchecked checkboxes won't be present → treat as 'no'.
 		$email   = isset( $_POST['webfiable_admin_email'] ) ? sanitize_email( wp_unslash( $_POST['webfiable_admin_email'] ) ) : '';
 		$consent = isset( $_POST['webfiable_consent'] ) ? 'yes' : 'no';
 		$enable  = isset( $_POST['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
@@ -152,7 +151,7 @@ function webfiable_render_settings_page() {
 		$notice      = '';
 		$notice_type = 'success';
 
-		// 1) Validate input early — no DB writes if fundamentally invalid.
+		// 1) Validate fields (fail fast; no DB writes).
 		if ( 'yes' !== $consent ) {
 			$notice      = __( 'You must accept the consent to register.', 'webfiable-info' );
 			$notice_type = 'error';
@@ -160,36 +159,48 @@ function webfiable_render_settings_page() {
 			$notice      = __( 'Invalid email address.', 'webfiable-info' );
 			$notice_type = 'error';
 		} else {
-			// 2) site_id must exist (set on activation). Never regenerate here.
+			// 2) site_id must already exist (created on activation). Never regenerate here.
 			$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
 			if ( '' === $site_id ) {
 				$notice      = __( 'Site ID is missing. Please deactivate and activate the plugin again.', 'webfiable-info' );
 				$notice_type = 'error';
 			} else {
-				// --- IMPORTANT RACE GUARD ---
-				// Read *previous* state BEFORE persisting new values, to decide if we need to call the proxy.
+				/*
+				---- RACE-SAFE ORDER ----
+				 * A) Snapshot previous values (for decision logic).
+				 * B) Persist new state (consent/email/endpoint) so /webfiable prechecks pass.
+				 * C) (When needed) Warm /webfiable once to defeat caches, then call proxy.
+				 */
+
+				// A) Read previous values BEFORE saving new ones.
 				$prev_email     = (string) get_option( 'webfiable_admin_email', '' );
 				$prev_consented = (int) get_option( 'webfiable_consent_ts', 0 ) > 0;
 
-				// 3) Persist state FIRST so /webfiable passes its own prechecks on this same request.
-				// We store:
-				// - consent_ts (>0 means consent granted),
-				// - admin_email (lowercased),
-				// - endpoint toggle (yes/no).
-				//
-				// We intentionally do NOT roll these back on failure; the endpoint depends on them.
+				// B) Persist state FIRST (do not roll back; endpoint depends on these).
 				webfiable_update_option( 'webfiable_consent_ts', time() );
 				webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
 				webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
-				// 4) Decide if the proxy call is needed based on the *previous* values:
-				// - first-time consent (prev_consented = false),
-				// - or email actually changed (case-insensitive).
+				// Decide if we need to register based on the PREVIOUS state.
 				$needs_registration = ( ! $prev_consented ) || ( strtolower( $prev_email ) !== strtolower( $email ) );
 
 				$ok = true;
 				if ( $needs_registration ) {
-					// Single, idempotent call to the proxy using normalized site URL.
+					// C) One-shot warm-up to avoid “first call sees old state” with edge/object caches.
+					// Harmless if not cached; only done when we actually need to register.
+					$warm = wp_remote_get(
+						home_url( '/' . WEBFIABLE_ENDPOINT_SLUG ),
+						array(
+							'timeout' => 5,
+							'headers' => array(
+								'Cache-Control' => 'no-cache',
+								'Pragma'        => 'no-cache',
+							),
+						)
+					);
+					// ignore $warm result on purpose.
+
+					// Single, idempotent proxy call.
 					$ok = webfiable_attempt_registration(
 						$site_id,
 						untrailingslashit( home_url() ),
@@ -199,7 +210,6 @@ function webfiable_render_settings_page() {
 				}
 
 				if ( ! $ok ) {
-					// Keep consent/email/endpoint as saved (endpoint relies on them).
 					$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
 					$notice_type = 'error';
 				} else {
@@ -209,7 +219,7 @@ function webfiable_render_settings_page() {
 			}
 		}
 
-		// PRG: store a short-lived notice and redirect to avoid “double-submit” and stale banners.
+		// Flash the notice and redirect (PRG) so UI reflects final state without needing a second save.
 		if ( '' !== $notice ) {
 			set_transient(
 				'webfiable_flash_notice',
@@ -217,33 +227,31 @@ function webfiable_render_settings_page() {
 					'type' => $notice_type,
 					'text' => $notice,
 				),
-				30 // seconds.
+				30
 			);
 		}
-
-		// Safe redirect back to our settings page; this also guarantees that
-		// any other notices (e.g., “incomplete setup”) evaluate against final state.
 		wp_safe_redirect( menu_page_url( 'webfiable-info', false ) );
 		exit;
 	}
 
-	// ---------- GET: render page after PRG redirect ----------
+	/* ---------- GET: render after redirect ---------- */
 	$site_id = webfiable_get_option( 'webfiable_site_id' );
 	$email   = webfiable_get_option( 'webfiable_admin_email' );
 	if ( empty( $email ) ) {
-		// UX nicety—prefill with the WP admin email if we haven’t stored one yet.
-		$email = get_option( 'admin_email' );
+		$email = get_option( 'admin_email' ); // UX prefill only.
 	}
 	$consented    = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
 	$enabled      = ( webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes' );
 	$endpoint_url = home_url( '/' . WEBFIABLE_ENDPOINT_SLUG );
 
-	// Flash notice (set during POST) — read & clear.
-	$flash = get_transient( 'webfiable_flash_notice' );
+	// Show flash notice set during POST.
+	$notice      = '';
+	$notice_type = 'success';
+	$flash       = get_transient( 'webfiable_flash_notice' );
 	if ( $flash && is_array( $flash ) && ! empty( $flash['text'] ) ) {
 		delete_transient( 'webfiable_flash_notice' );
-		$notice_type = ! empty( $flash['type'] ) ? $flash['type'] : 'success';
 		$notice      = $flash['text'];
+		$notice_type = ! empty( $flash['type'] ) ? $flash['type'] : 'success';
 	}
 
 	?>
@@ -273,13 +281,11 @@ function webfiable_render_settings_page() {
 						<label>
 							<input type="checkbox" name="webfiable_consent" <?php checked( $consented ); ?> />
 							<?php
-							$consent_text = sprintf(
-								/* translators: %s: Privacy policy URL. */
-								__( 'I agree to send site inventory and my email to Webfiable to receive reports. See <a href="%s" target="_blank" rel="noopener">Privacy</a>.', 'webfiable-info' ),
-								esc_url( 'https://webfiable.com/politica-privacidad/' )
-							);
 							echo wp_kses(
-								$consent_text,
+								sprintf(
+									__( 'I agree to send site inventory and my email to Webfiable to receive reports. See <a href="%s" target="_blank" rel="noopener">Privacy</a>.', 'webfiable-info' ),
+									esc_url( 'https://webfiable.com/politica-privacidad/' )
+								),
 								array(
 									'a' => array(
 										'href'   => true,
