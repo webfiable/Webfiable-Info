@@ -217,7 +217,7 @@ function webfiable_render_settings_page() {
 					'type' => $notice_type,
 					'text' => $notice,
 				),
-				30 // seconds
+				30 // seconds.
 			);
 		}
 
@@ -316,86 +316,3 @@ function webfiable_render_settings_page() {
 	</div>
 	<?php
 }
-
-
-	$site_id = webfiable_get_option( 'webfiable_site_id' );
-	$email   = webfiable_get_option( 'webfiable_admin_email' );
-if ( empty( $email ) ) {
-	$email = get_option( 'admin_email' ); // Prefill from WP settings.
-}
-	$consented    = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
-	$enabled      = webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes';
-	$endpoint_url = home_url( '/' . WEBFIABLE_ENDPOINT_SLUG );
-?>
-	<div class="wrap">
-		<h1><?php esc_html_e( 'Webfiable Info', 'webfiable-info' ); ?></h1>
-
-	<?php if ( ! empty( $notice ) ) : ?>
-	<div class="notice notice-<?php echo esc_attr( $notice_type ); ?>">
-		<p><?php echo esc_html( $notice ); ?></p>
-	</div>
-	<?php endif; ?>
-
-
-		<form method="post">
-			<?php wp_nonce_field( 'webfiable_save_settings' ); ?>
-			<table class="form-table" role="presentation">
-				<tr>
-					<th scope="row"><label for="webfiable_admin_email"><?php esc_html_e( 'Report recipient email', 'webfiable-info' ); ?></label></th>
-					<td>
-						<input name="webfiable_admin_email" id="webfiable_admin_email" type="email" class="regular-text" value="<?php echo esc_attr( $email ); ?>" required />
-						<p class="description"><?php esc_html_e( 'We will send the first full report and subsequent summaries to this address.', 'webfiable-info' ); ?></p>
-					</td>
-				</tr>
-
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Consent', 'webfiable-info' ); ?></th>
-					<td>
-						<label>
-							<input type="checkbox" name="webfiable_consent" <?php checked( $consented ); ?> />
-							<?php
-							/* translators: %s: Privacy policy URL. */
-							$consent_text = sprintf(
-								/* translators: %s: Privacy policy URL. */
-								__( 'I agree to send site inventory and my email to Webfiable to receive reports. See <a href="%s" target="_blank" rel="noopener">Privacy</a>.', 'webfiable-info' ),
-								esc_url( 'https://webfiable.com/politica-privacidad/' )
-							);
-
-							echo wp_kses(
-								$consent_text,
-								array(
-									'a' => array(
-										'href'   => true,
-										'target' => true,
-										'rel'    => true,
-									),
-								)
-							);
-							?>
-						</label>
-					</td>
-				</tr>
-
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Public endpoint', 'webfiable-info' ); ?></th>
-					<td>
-						<label>
-							<input type="checkbox" name="webfiable_endpoint_enabled" <?php checked( $enabled ); ?> />
-							<?php esc_html_e( 'Enable /webfiable endpoint', 'webfiable-info' ); ?>
-						</label>
-						<p class="description"><code><?php echo esc_html( $endpoint_url ); ?></code></p>
-					</td>
-				</tr>
-			</table>
-			<?php submit_button( __( 'Save settings', 'webfiable-info' ), 'primary', 'webfiable_save_settings' ); ?>
-		</form>
-
-		<h2><?php esc_html_e( 'Status', 'webfiable-info' ); ?></h2>
-		<ul>
-			<li><?php esc_html_e( 'Site ID:', 'webfiable-info' ); ?> <code><?php echo esc_html( $site_id ); ?></code></li>
-			<li><?php esc_html_e( 'Endpoint:', 'webfiable-info' ); ?> <?php echo $enabled ? esc_html__( 'Enabled', 'webfiable-info' ) : esc_html__( 'Disabled', 'webfiable-info' ); ?></li>
-			<li><?php esc_html_e( 'Consent:', 'webfiable-info' ); ?> <?php echo $consented ? esc_html__( 'Granted', 'webfiable-info' ) : esc_html__( 'Not granted', 'webfiable-info' ); ?></li>
-		</ul>
-	</div>
-	<?php
-	}
