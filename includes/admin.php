@@ -206,37 +206,69 @@ function webfiable_handle_settings_post() {
 			// Decide if we need to register based on the PREVIOUS state.
 			$needs_registration = ( ! $prev_consented ) || ( strtolower( $prev_email ) !== strtolower( $email ) );
 
-			$ok = true;
+			$enabled_now = ( 'yes' === $enable );
+
+			// Default optimistic notice when nothing else triggers.
+			$notice      = __( 'Settings saved.', 'webfiable-info' );
+			$notice_type = 'success';
+
 			if ( $needs_registration ) {
-				// C) One-shot warm-up to avoid “first call sees old state” with edge/object caches.
-				// Harmless if not cached; only done when we actually need to register.
-				$warm = wp_remote_get(
-					home_url( '/' . WEBFIABLE_ENDPOINT_SLUG ),
-					array(
-						'timeout' => 5,
-						'headers' => array(
-							'Cache-Control' => 'no-cache',
-							'Pragma'        => 'no-cache',
-						),
-					)
-				);
-				// ignore $warm result on purpose.
+				if ( ! $enabled_now ) {
+					// Endpoint must be active to proceed with registration.
+					$notice      = __( 'To complete registration, please enable the /webfiable endpoint and save again.', 'webfiable-info' );
+					$notice_type = 'error';
+				} else {
+					// C) Verify endpoint is published and returns a valid payload before calling proxy.
+					$verify = wp_remote_get(
+						home_url( '/' . WEBFIABLE_ENDPOINT_SLUG ),
+						array(
+							'timeout' => 10,
+							'headers' => array(
+								'Cache-Control' => 'no-cache',
+								'Pragma'        => 'no-cache',
+							),
+						)
+					);
 
-				// Single, idempotent proxy call.
-				$ok = webfiable_attempt_registration(
-					$site_id,
-					untrailingslashit( home_url() ),
-					strtolower( $email ),
-					'https://webfiable.com'
-				);
-			}
+					$published_ok = true;
+					if ( is_wp_error( $verify ) ) {
+						$published_ok = false;
+					} else {
+						$code = (int) wp_remote_retrieve_response_code( $verify );
+						$body = wp_remote_retrieve_body( $verify );
+						if ( 200 !== $code ) {
+							$published_ok = false;
+						} else {
+							$json         = json_decode( (string) $body, true );
+							$published_ok = is_array( $json ) && isset( $json['encrypted_key'], $json['iv'], $json['data'] );
+						}
+					}
 
-			if ( ! $ok ) {
-				$notice      = __( 'Registration could not be completed now. Please try again later.', 'webfiable-info' );
-				$notice_type = 'error';
-			} else {
-				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
-				$notice_type = 'success';
+					if ( ! $published_ok ) {
+						// Safeguard: disable the endpoint if verification fails.
+						webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+						$notice      = __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
+						$notice_type = 'error';
+					} else {
+						// Single, idempotent proxy call.
+						$ok = webfiable_attempt_registration(
+							$site_id,
+							untrailingslashit( home_url() ),
+							strtolower( $email ),
+							'https://webfiable.com'
+						);
+
+						if ( ! $ok ) {
+							// Safeguard: disable endpoint when registration fails.
+							webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+							$notice      = __( 'Registration failed; the endpoint has been disabled as a safeguard. Please try again later.', 'webfiable-info' );
+							$notice_type = 'error';
+						} else {
+							$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
+							$notice_type = 'success';
+						}
+					}
+				}
 			}
 		}
 	}
