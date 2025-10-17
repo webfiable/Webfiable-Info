@@ -197,6 +197,7 @@ function webfiable_handle_settings_post() {
 			// A) Read previous values BEFORE saving new ones.
 			$prev_email     = (string) get_option( 'webfiable_admin_email', '' );
 			$prev_consented = (int) get_option( 'webfiable_consent_ts', 0 ) > 0;
+			$prev_enabled   = ( 'yes' === (string) get_option( 'webfiable_endpoint_enabled', 'no' ) );
 
 			// B) Persist state FIRST (do not roll back; endpoint depends on these).
 			webfiable_update_option( 'webfiable_consent_ts', time() );
@@ -204,7 +205,10 @@ function webfiable_handle_settings_post() {
 			webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
 			// Decide if we need to register based on the PREVIOUS state.
-			$needs_registration = ( ! $prev_consented ) || ( strtolower( $prev_email ) !== strtolower( $email ) );
+			// Register when: consent is newly granted OR email changed OR endpoint toggled from disabled→enabled.
+			$needs_registration = ( ! $prev_consented )
+				|| ( strtolower( $prev_email ) !== strtolower( $email ) )
+				|| ( ! $prev_enabled && 'yes' === $enable );
 
 			$enabled_now = ( 'yes' === $enable );
 
@@ -218,17 +222,22 @@ function webfiable_handle_settings_post() {
 					$notice      = __( 'To complete registration, please enable the /webfiable endpoint and save again.', 'webfiable-info' );
 					$notice_type = 'error';
 				} else {
-					// C) Verify endpoint is published and returns a valid payload before calling proxy.
-					$verify = wp_remote_get(
-						home_url( '/' . WEBFIABLE_ENDPOINT_SLUG ),
-						array(
-							'timeout' => 10,
-							'headers' => array(
-								'Cache-Control' => 'no-cache',
-								'Pragma'        => 'no-cache',
-							),
-						)
+					// C) Warm and verify the endpoint to avoid caches returning stale state.
+					$warm_url       = add_query_arg( array( '_wf' => time() ), home_url( '/' . WEBFIABLE_ENDPOINT_SLUG ) );
+					$verify_headers = array(
+						'timeout' => 10,
+						'headers' => array(
+							'Cache-Control' => 'no-cache, no-store, must-revalidate',
+							'Pragma'        => 'no-cache',
+							'Expires'       => '0',
+						),
 					);
+					// Warm once (ignore result) to populate caches/rewrite path.
+					wp_remote_get( $warm_url, $verify_headers );
+
+					// Verify with a fresh cache-busting token.
+					$verify_url = add_query_arg( array( '_wf' => (string) ( time() + 1 ) ), home_url( '/' . WEBFIABLE_ENDPOINT_SLUG ) );
+					$verify     = wp_remote_get( $verify_url, $verify_headers );
 
 					$published_ok = true;
 					if ( is_wp_error( $verify ) ) {
