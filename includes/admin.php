@@ -122,17 +122,13 @@ if ( ! function_exists( 'webfiable_admin_menu' ) ) {
 	 * @return void
 	 */
 	function webfiable_admin_menu() {
-		$hook = add_options_page(
+		add_options_page(
 			__( 'Webfiable Info', 'webfiable-info' ),
 			__( 'Webfiable Info', 'webfiable-info' ),
 			'manage_options',
 			'webfiable-info',
 			'webfiable_render_settings_page'
 		);
-		// Handle POST early (before any output) to allow safe redirects.
-		if ( $hook ) {
-			add_action( 'load-' . $hook, 'webfiable_handle_settings_post' );
-		}
 	}
 }
 add_action( 'admin_menu', 'webfiable_admin_menu' );
