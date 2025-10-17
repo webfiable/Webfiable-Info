@@ -134,6 +134,79 @@ if ( ! function_exists( 'webfiable_admin_menu' ) ) {
 add_action( 'admin_menu', 'webfiable_admin_menu' );
 
 /**
+ * Perform a test request against the /webfiable endpoint.
+ *
+ * @since 2.0.1
+ *
+ * @return array{
+ *     success:bool,
+ *     url:string,
+ *     http_code:int|null,
+ *     body:string|null,
+ *     error:string|null,
+ *     decoded:mixed
+ * }
+ */
+function webfiable_run_endpoint_test() {
+	$verify_url = add_query_arg(
+		array( '_wf' => (string) wp_rand( 1000, 9999 ) ),
+		home_url( '/' . WEBFIABLE_ENDPOINT_SLUG )
+	);
+
+	$result = array(
+		'success'   => false,
+		'url'       => $verify_url,
+		'http_code' => null,
+		'body'      => null,
+		'error'     => null,
+		'decoded'   => null,
+	);
+
+	$response = wp_remote_get(
+		$verify_url,
+		array(
+			'timeout' => 10,
+			'headers' => array(
+				'Cache-Control' => 'no-cache, no-store, must-revalidate',
+				'Pragma'        => 'no-cache',
+				'Expires'       => '0',
+			),
+		)
+	);
+
+	if ( is_wp_error( $response ) ) {
+		$result['error'] = $response->get_error_message();
+		return $result;
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	$body = wp_remote_retrieve_body( $response );
+
+	$result['http_code'] = $code;
+	$result['body']      = (string) $body;
+
+	if ( 200 !== $code ) {
+		$result['error'] = sprintf(
+			/* translators: %d: HTTP status code returned by the endpoint verification request. */
+			__( 'Unexpected HTTP status: %d', 'webfiable-info' ),
+			$code
+		);
+		return $result;
+	}
+
+	$json              = json_decode( (string) $body, true );
+	$result['decoded'] = $json;
+
+	if ( is_array( $json ) && isset( $json['encrypted_key'], $json['iv'], $json['data'] ) ) {
+		$result['success'] = true;
+		return $result;
+	}
+
+	$result['error'] = __( 'Unexpected response payload.', 'webfiable-info' );
+	return $result;
+}
+
+/**
  * Settings page (render + save) — simple version:
  * - Always saves consent/email/endpoint.
  * - Always calls the proxy after saving.
@@ -144,8 +217,10 @@ function webfiable_render_settings_page() {
 		return;
 	}
 
-	$notice      = '';
-	$notice_type = 'success';
+	$notice                 = '';
+	$notice_type            = 'success';
+	$previous_enabled_value = webfiable_get_option( 'webfiable_endpoint_enabled' );
+	$endpoint_test_result   = null;
 
 	// Handle submit.
 	$post_data = filter_input_array(
@@ -188,35 +263,20 @@ function webfiable_render_settings_page() {
 			webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
 			webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
 
-			$endpoint_ready = true;
-			if ( 'yes' === $enable ) {
-				$verify_url = add_query_arg(
-					array( '_wf' => (string) wp_rand( 1000, 9999 ) ),
-					home_url( '/' . WEBFIABLE_ENDPOINT_SLUG )
-				);
-				$verify     = wp_remote_get(
-					$verify_url,
-					array(
-						'timeout' => 10,
-						'headers' => array(
-							'Cache-Control' => 'no-cache, no-store, must-revalidate',
-							'Pragma'        => 'no-cache',
-							'Expires'       => '0',
-						),
-					)
-				);
-
-				$endpoint_ready = false;
-				if ( ! is_wp_error( $verify ) ) {
-					$code = (int) wp_remote_retrieve_response_code( $verify );
-					if ( 200 === $code ) {
-						$body           = wp_remote_retrieve_body( $verify );
-						$json           = json_decode( (string) $body, true );
-						$endpoint_ready = is_array( $json ) && isset( $json['encrypted_key'], $json['iv'], $json['data'] );
-					}
+			if ( 'yes' === $enable && 'yes' !== $previous_enabled_value ) {
+				// Ensure rewrite rules include the /webfiable endpoint immediately when turning it on.
+				if ( function_exists( 'webfiable_register_route' ) ) {
+					webfiable_register_route();
 				}
+				if ( function_exists( 'flush_rewrite_rules' ) ) {
+					flush_rewrite_rules( false );
+				}
+			}
 
-				if ( ! $endpoint_ready ) {
+			if ( 'yes' === $enable ) {
+				$endpoint_test_result = webfiable_run_endpoint_test();
+
+				if ( empty( $endpoint_test_result['success'] ) ) {
 					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
 					$enable      = 'no';
 					$notice      = __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
@@ -324,6 +384,33 @@ function webfiable_render_settings_page() {
 			<li><?php esc_html_e( 'Endpoint:', 'webfiable-info' ); ?> <?php echo $enabled ? esc_html__( 'Enabled', 'webfiable-info' ) : esc_html__( 'Disabled', 'webfiable-info' ); ?></li>
 			<li><?php esc_html_e( 'Consent:', 'webfiable-info' ); ?> <?php echo $consented ? esc_html__( 'Granted', 'webfiable-info' ) : esc_html__( 'Not granted', 'webfiable-info' ); ?></li>
 		</ul>
+
+		<h2><?php esc_html_e( 'Endpoint Test', 'webfiable-info' ); ?></h2>
+		<?php if ( null === $endpoint_test_result ) : ?>
+			<p><?php esc_html_e( 'No endpoint test was run in this request. Enable the endpoint and save the settings to run a live test.', 'webfiable-info' ); ?></p>
+		<?php else : ?>
+			<p>
+				<?php if ( ! empty( $endpoint_test_result['success'] ) ) : ?>
+					<?php esc_html_e( 'Endpoint test succeeded.', 'webfiable-info' ); ?>
+				<?php else : ?>
+					<?php esc_html_e( 'Endpoint test failed.', 'webfiable-info' ); ?>
+				<?php endif; ?>
+			</p>
+			<ul>
+				<li><?php esc_html_e( 'URL:', 'webfiable-info' ); ?> <code><?php echo esc_url( $endpoint_test_result['url'] ); ?></code></li>
+				<?php if ( null !== $endpoint_test_result['http_code'] ) : ?>
+					<li><?php esc_html_e( 'HTTP status:', 'webfiable-info' ); ?>
+						<?php echo esc_html( (string) $endpoint_test_result['http_code'] ); ?></li>
+				<?php endif; ?>
+				<?php if ( ! empty( $endpoint_test_result['error'] ) ) : ?>
+					<li><?php esc_html_e( 'Error:', 'webfiable-info' ); ?> <?php echo esc_html( $endpoint_test_result['error'] ); ?></li>
+				<?php endif; ?>
+			</ul>
+			<?php if ( null !== $endpoint_test_result['body'] ) : ?>
+				<p><?php esc_html_e( 'Response body:', 'webfiable-info' ); ?></p>
+				<pre><code><?php echo esc_html( $endpoint_test_result['body'] ); ?></code></pre>
+			<?php endif; ?>
+		<?php endif; ?>
 	</div>
 	<?php
 }
