@@ -14,11 +14,25 @@ defined( 'ABSPATH' ) || exit;
  * @param string $site_url    Public site URL (e.g., home_url()).
  * @param string $admin_email Admin email to register.
  * @param string $proxy_base  Proxy base URL (default: https://webfiable.com).
- * @return bool True on success, false on failure.
+ * @return array{
+ *     success:bool,
+ *     endpoint:string,
+ *     payload:array<string,string>,
+ *     http_code:int|null,
+ *     response_body:string|null,
+ *     error:string|null
+ * } Registration attempt metadata.
  */
 function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $proxy_base = 'https://webfiable.com' ) {
 	if ( '' === $site_id || '' === $site_url || '' === $admin_email ) {
-		return false;
+		return array(
+			'success'       => false,
+			'endpoint'      => '',
+			'payload'       => array(),
+			'http_code'     => null,
+			'response_body' => null,
+			'error'         => __( 'Missing registration parameters.', 'webfiable-info' ),
+		);
 	}
 
 	$site_url    = untrailingslashit( (string) $site_url );
@@ -38,29 +52,48 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 		'body'    => wp_json_encode( $payload ),
 	);
 
+	$result = array(
+		'success'       => false,
+		'endpoint'      => $endpoint,
+		'payload'       => $payload,
+		'http_code'     => null,
+		'response_body' => null,
+		'error'         => null,
+	);
+
 	$response = wp_remote_post( $endpoint, $args );
 
-	if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-		if ( is_wp_error( $response ) ) {
-			error_log( '[Webfiable] proxy error: ' . $response->get_error_message() );
-		} else {
-			$code = (int) wp_remote_retrieve_response_code( $response );
-			$body = wp_remote_retrieve_body( $response );
-			error_log( '[Webfiable] proxy reply: code=' . $code . ' body=' . trim( (string) $body ) );
-		}
-	}
-
 	if ( is_wp_error( $response ) ) {
-		return false;
+		$result['error'] = $response->get_error_message();
+
+		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			error_log( '[Webfiable] proxy error: ' . $result['error'] );
+		}
+
+		return $result;
 	}
 
 	$code = (int) wp_remote_retrieve_response_code( $response );
 	$body = wp_remote_retrieve_body( $response );
+
+	$result['http_code']     = $code;
+	$result['response_body'] = (string) $body;
+
+	if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+		error_log( '[Webfiable] proxy reply: code=' . $code . ' body=' . trim( (string) $body ) );
+	}
 
 	// Accept JSON true, or a raw "true" (with/without newline/quotes).
 	$json    = json_decode( $body, true );
 	$trimmed = strtolower( trim( (string) $body ) );
 	$success = ( true === $json ) || ( 'true' === $trimmed );
 
-	return $success;
+	if ( $success ) {
+		$result['success'] = true;
+		return $result;
+	}
+
+	$result['error'] = __( 'Unexpected API response.', 'webfiable-info' );
+
+	return $result;
 }

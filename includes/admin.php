@@ -221,6 +221,7 @@ function webfiable_render_settings_page() {
 	$notice_type            = 'success';
 	$previous_enabled_value = webfiable_get_option( 'webfiable_endpoint_enabled' );
 	$endpoint_test_result   = null;
+	$registration_result    = null;
 
 	// Handle submit.
 	$post_data = filter_input_array(
@@ -285,14 +286,16 @@ function webfiable_render_settings_page() {
 			}
 
 			if ( 'yes' === $enable ) {
-				$registered = webfiable_attempt_registration(
+				$registration_result = webfiable_attempt_registration(
 					$site_id,
 					untrailingslashit( home_url() ),
 					strtolower( $email ),
 					'https://webfiable.com'
 				);
 
-				if ( $registered ) {
+				$registration_success = is_array( $registration_result ) && ! empty( $registration_result['success'] );
+
+				if ( $registration_success ) {
 					$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
 					$notice_type = 'success';
 				} else {
@@ -384,6 +387,34 @@ function webfiable_render_settings_page() {
 			<li><?php esc_html_e( 'Endpoint:', 'webfiable-info' ); ?> <?php echo $enabled ? esc_html__( 'Enabled', 'webfiable-info' ) : esc_html__( 'Disabled', 'webfiable-info' ); ?></li>
 			<li><?php esc_html_e( 'Consent:', 'webfiable-info' ); ?> <?php echo $consented ? esc_html__( 'Granted', 'webfiable-info' ) : esc_html__( 'Not granted', 'webfiable-info' ); ?></li>
 		</ul>
+
+		<h2><?php esc_html_e( 'API Request', 'webfiable-info' ); ?></h2>
+		<?php if ( null === $registration_result ) : ?>
+			<p><?php esc_html_e( 'No registration request was sent during this save operation.', 'webfiable-info' ); ?></p>
+		<?php else : ?>
+			<p>
+				<?php if ( ! empty( $registration_result['success'] ) ) : ?>
+					<?php esc_html_e( 'Registration request succeeded.', 'webfiable-info' ); ?>
+				<?php else : ?>
+					<?php esc_html_e( 'Registration request failed.', 'webfiable-info' ); ?>
+				<?php endif; ?>
+			</p>
+			<ul>
+				<li><?php esc_html_e( 'Endpoint:', 'webfiable-info' ); ?> <code><?php echo esc_url( isset( $registration_result['endpoint'] ) ? $registration_result['endpoint'] : '' ); ?></code></li>
+				<?php if ( isset( $registration_result['http_code'] ) && null !== $registration_result['http_code'] ) : ?>
+					<li><?php esc_html_e( 'HTTP status:', 'webfiable-info' ); ?> <?php echo esc_html( (string) $registration_result['http_code'] ); ?></li>
+				<?php endif; ?>
+				<?php if ( ! empty( $registration_result['error'] ) ) : ?>
+					<li><?php esc_html_e( 'Error:', 'webfiable-info' ); ?> <?php echo esc_html( $registration_result['error'] ); ?></li>
+				<?php endif; ?>
+			</ul>
+			<p><?php esc_html_e( 'Payload sent:', 'webfiable-info' ); ?></p>
+			<pre><code><?php echo esc_html( wp_json_encode( isset( $registration_result['payload'] ) ? $registration_result['payload'] : array(), JSON_PRETTY_PRINT ) ); ?></code></pre>
+			<?php if ( isset( $registration_result['response_body'] ) && null !== $registration_result['response_body'] ) : ?>
+				<p><?php esc_html_e( 'Response body:', 'webfiable-info' ); ?></p>
+				<pre><code><?php echo esc_html( $registration_result['response_body'] ); ?></code></pre>
+			<?php endif; ?>
+		<?php endif; ?>
 
 		<h2><?php esc_html_e( 'Endpoint Test', 'webfiable-info' ); ?></h2>
 		<?php if ( null === $endpoint_test_result ) : ?>
