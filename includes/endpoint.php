@@ -50,10 +50,10 @@ function webfiable_template_redirect() {
 		$raw_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$ip     = ( function_exists( 'rest_is_ip_address' ) && rest_is_ip_address( $raw_ip ) ) ? $raw_ip : '0.0.0.0';
 
-		// 1–2 requests per minute per IP.
+		// 25 requests per minute per IP.
 		$key   = 'webfiable_rl_' . md5( $ip );
 		$count = (int) get_transient( $key );
-		if ( $count >= 5 ) {
+		if ( $count >= 25 ) {
 			status_header( 429 );
 			wp_send_json( array( 'error' => 'rate_limited' ) );
 		}
