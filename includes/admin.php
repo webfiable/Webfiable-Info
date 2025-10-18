@@ -187,13 +187,15 @@ function webfiable_handle_settings_submission() {
 	$previous_enabled_value = webfiable_get_option( 'webfiable_endpoint_enabled' );
 
 	// Basic validation.
-	if ( 'yes' !== $consent ) {
-		$notice      = __( 'You must accept the consent to register.', 'webfiable-info' );
-		$notice_type = 'error';
-	} elseif ( empty( $email ) || ! is_email( $email ) ) {
+	if ( empty( $email ) || ! is_email( $email ) ) {
 		$notice      = __( 'Invalid email address.', 'webfiable-info' );
 		$notice_type = 'error';
 	} else {
+		$consent_granted    = ( 'yes' === $consent );
+		$endpoint_requested = ( 'yes' === $enable );
+		$consent_ts_value   = $consent_granted ? time() : 0;
+		$enable             = ( $consent_granted && $endpoint_requested ) ? 'yes' : 'no';
+
 		// Ensure we have a site ID (normally set on activation).
 		$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
 		if ( '' === $site_id ) {
@@ -202,9 +204,9 @@ function webfiable_handle_settings_submission() {
 		}
 
 		// Persist state so the endpoint reflects the new values immediately.
-		webfiable_update_option( 'webfiable_consent_ts', time() );
+		webfiable_update_option( 'webfiable_consent_ts', $consent_ts_value );
 		webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
-		webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
+		webfiable_update_option( 'webfiable_endpoint_enabled', $enable );
 
 		if ( 'yes' === $enable && 'yes' !== $previous_enabled_value ) {
 			// Ensure rewrite rules include the /webfiable endpoint immediately when turning it on.
@@ -235,7 +237,7 @@ function webfiable_handle_settings_submission() {
 				'https://webfiable.com'
 			);
 
-				$registration_success = is_array( $registration_result ) && ! empty( $registration_result['success'] );
+			$registration_success = is_array( $registration_result ) && ! empty( $registration_result['success'] );
 
 			if ( $registration_success ) {
 				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
@@ -247,8 +249,8 @@ function webfiable_handle_settings_submission() {
 				$notice_type = 'error';
 			}
 		} elseif ( '' === $notice ) {
-					$notice      = __( 'Settings saved.', 'webfiable-info' );
-					$notice_type = 'success';
+			$notice      = __( 'Settings saved.', 'webfiable-info' );
+			$notice_type = 'success';
 		}
 	}
 
