@@ -132,6 +132,145 @@ if ( ! function_exists( 'webfiable_admin_menu' ) ) {
 	}
 }
 add_action( 'admin_menu', 'webfiable_admin_menu' );
+/**
+ * Handle settings form submission and cache the result for reuse.
+ *
+ * @return array<string,mixed> Result data for the settings screen.
+ */
+function webfiable_handle_settings_submission() {
+
+	static $result = null;
+
+	if ( null !== $result ) {
+		return $result;
+	}
+
+	$result = array(
+		'processed'            => false,
+		'notice'               => '',
+		'notice_type'          => 'success',
+		'endpoint_test_result' => null,
+		'registration_result'  => null,
+	);
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return $result;
+	}
+
+	$post_data = filter_input_array(
+		INPUT_POST,
+		array(
+			'webfiable_save_settings'    => FILTER_DEFAULT,
+			'webfiable_admin_email'      => FILTER_UNSAFE_RAW,
+			'webfiable_consent'          => FILTER_DEFAULT,
+			'webfiable_endpoint_enabled' => FILTER_DEFAULT,
+		)
+	);
+	if ( ! is_array( $post_data ) ) {
+		$post_data = array();
+	}
+
+	if ( ! isset( $post_data['webfiable_save_settings'] ) || ! check_admin_referer( 'webfiable_save_settings' ) ) {
+		return $result;
+	}
+
+	$raw_email_value = isset( $post_data['webfiable_admin_email'] ) ? $post_data['webfiable_admin_email'] : '';
+	$raw_email       = is_string( $raw_email_value ) ? wp_unslash( $raw_email_value ) : '';
+	$email           = sanitize_email( $raw_email );
+	$consent         = isset( $post_data['webfiable_consent'] ) ? 'yes' : 'no';
+	$enable          = isset( $post_data['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
+
+	$notice                 = '';
+	$notice_type            = 'success';
+	$endpoint_test_result   = null;
+	$registration_result    = null;
+	$previous_enabled_value = webfiable_get_option( 'webfiable_endpoint_enabled' );
+
+	// Basic validation.
+	if ( 'yes' !== $consent ) {
+		$notice      = __( 'You must accept the consent to register.', 'webfiable-info' );
+		$notice_type = 'error';
+	} elseif ( empty( $email ) || ! is_email( $email ) ) {
+		$notice      = __( 'Invalid email address.', 'webfiable-info' );
+		$notice_type = 'error';
+	} else {
+		// Ensure we have a site ID (normally set on activation).
+		$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
+		if ( '' === $site_id ) {
+			$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'wf_', true );
+			webfiable_update_option( 'webfiable_site_id', $site_id );
+		}
+
+		// Persist state so the endpoint reflects the new values immediately.
+		webfiable_update_option( 'webfiable_consent_ts', time() );
+		webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
+		webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
+
+		if ( 'yes' === $enable && 'yes' !== $previous_enabled_value ) {
+			// Ensure rewrite rules include the /webfiable endpoint immediately when turning it on.
+			if ( function_exists( 'webfiable_register_route' ) ) {
+				webfiable_register_route();
+			}
+			if ( function_exists( 'flush_rewrite_rules' ) ) {
+				flush_rewrite_rules( false );
+			}
+		}
+
+		if ( 'yes' === $enable ) {
+			$endpoint_test_result = webfiable_run_endpoint_test();
+
+			if ( empty( $endpoint_test_result['success'] ) ) {
+				webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+				$enable      = 'no';
+				$notice      = __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
+				$notice_type = 'error';
+			}
+		}
+
+		if ( 'yes' === $enable ) {
+			$registration_result = webfiable_attempt_registration(
+				$site_id,
+				untrailingslashit( home_url() ),
+				strtolower( $email ),
+				'https://webfiable.com'
+			);
+
+				$registration_success = is_array( $registration_result ) && ! empty( $registration_result['success'] );
+
+			if ( $registration_success ) {
+				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
+				$notice_type = 'success';
+			} else {
+				webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+				$enable      = 'no';
+				$notice      = __( 'Registration failed; please review the API request details below and try again later.', 'webfiable-info' );
+				$notice_type = 'error';
+			}
+		} elseif ( '' === $notice ) {
+					$notice      = __( 'Settings saved.', 'webfiable-info' );
+					$notice_type = 'success';
+		}
+	}
+
+	$result['processed']            = true;
+	$result['notice']               = $notice;
+	$result['notice_type']          = $notice_type;
+	$result['endpoint_test_result'] = $endpoint_test_result;
+	$result['registration_result']  = $registration_result;
+
+	return $result;
+}
+
+/**
+ * Process settings submission prior to rendering notices.
+ *
+ * @return void
+ */
+function webfiable_process_settings_submission() {
+
+	webfiable_handle_settings_submission();
+}
+add_action( 'load-settings_page_webfiable-info', 'webfiable_process_settings_submission' );
 
 /**
  * Perform a test request against the /webfiable endpoint.
@@ -217,99 +356,12 @@ function webfiable_render_settings_page() {
 		return;
 	}
 
-	$notice                 = '';
-	$notice_type            = 'success';
-	$previous_enabled_value = webfiable_get_option( 'webfiable_endpoint_enabled' );
-	$endpoint_test_result   = null;
-	$registration_result    = null;
+	$state = webfiable_handle_settings_submission();
 
-	// Handle submit.
-	$post_data = filter_input_array(
-		INPUT_POST,
-		array(
-			'webfiable_save_settings'    => FILTER_DEFAULT,
-			'webfiable_admin_email'      => FILTER_UNSAFE_RAW,
-			'webfiable_consent'          => FILTER_DEFAULT,
-			'webfiable_endpoint_enabled' => FILTER_DEFAULT,
-		)
-	);
-	if ( ! is_array( $post_data ) ) {
-		$post_data = array();
-	}
-
-	if ( isset( $post_data['webfiable_save_settings'] ) && check_admin_referer( 'webfiable_save_settings' ) ) {
-		$raw_email_value = isset( $post_data['webfiable_admin_email'] ) ? $post_data['webfiable_admin_email'] : '';
-		$raw_email       = is_string( $raw_email_value ) ? wp_unslash( $raw_email_value ) : '';
-		$email           = sanitize_email( $raw_email );
-		$consent         = isset( $post_data['webfiable_consent'] ) ? 'yes' : 'no';
-		$enable          = isset( $post_data['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
-
-		// Basic validation.
-		if ( 'yes' !== $consent ) {
-			$notice      = __( 'You must accept the consent to register.', 'webfiable-info' );
-			$notice_type = 'error';
-		} elseif ( empty( $email ) || ! is_email( $email ) ) {
-			$notice      = __( 'Invalid email address.', 'webfiable-info' );
-			$notice_type = 'error';
-		} else {
-			// Ensure we have a site ID (normally set on activation).
-			$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
-			if ( '' === $site_id ) {
-				$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'wf_', true );
-				webfiable_update_option( 'webfiable_site_id', $site_id );
-			}
-
-			// Persist state so the endpoint reflects the new values immediately.
-			webfiable_update_option( 'webfiable_consent_ts', time() );
-			webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
-			webfiable_update_option( 'webfiable_endpoint_enabled', ( 'yes' === $enable ? 'yes' : 'no' ) );
-
-			if ( 'yes' === $enable && 'yes' !== $previous_enabled_value ) {
-				// Ensure rewrite rules include the /webfiable endpoint immediately when turning it on.
-				if ( function_exists( 'webfiable_register_route' ) ) {
-					webfiable_register_route();
-				}
-				if ( function_exists( 'flush_rewrite_rules' ) ) {
-					flush_rewrite_rules( false );
-				}
-			}
-
-			if ( 'yes' === $enable ) {
-				$endpoint_test_result = webfiable_run_endpoint_test();
-
-				if ( empty( $endpoint_test_result['success'] ) ) {
-					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
-					$enable      = 'no';
-					$notice      = __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
-					$notice_type = 'error';
-				}
-			}
-
-			if ( 'yes' === $enable ) {
-				$registration_result = webfiable_attempt_registration(
-					$site_id,
-					untrailingslashit( home_url() ),
-					strtolower( $email ),
-					'https://webfiable.com'
-				);
-
-				$registration_success = is_array( $registration_result ) && ! empty( $registration_result['success'] );
-
-				if ( $registration_success ) {
-					$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
-					$notice_type = 'success';
-				} else {
-					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
-					$enable      = 'no';
-					$notice      = __( 'Registration failed; please review the API request details below and try again later.', 'webfiable-info' );
-					$notice_type = 'error';
-				}
-			} elseif ( '' === $notice ) {
-				$notice      = __( 'Settings saved.', 'webfiable-info' );
-				$notice_type = 'success';
-			}
-		}
-	}
+	$notice               = isset( $state['notice'] ) ? $state['notice'] : '';
+	$notice_type          = isset( $state['notice_type'] ) ? $state['notice_type'] : 'success';
+	$endpoint_test_result = isset( $state['endpoint_test_result'] ) ? $state['endpoint_test_result'] : null;
+	$registration_result  = isset( $state['registration_result'] ) ? $state['registration_result'] : null;
 
 	// Current values for rendering.
 	$site_id = webfiable_get_option( 'webfiable_site_id' );
