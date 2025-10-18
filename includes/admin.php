@@ -299,6 +299,8 @@ function webfiable_render_settings_page() {
 					$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
 					$notice_type = 'success';
 				} else {
+					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+					$enable      = 'no';
 					$notice      = __( 'Registration failed; please review the API request details below and try again later.', 'webfiable-info' );
 					$notice_type = 'error';
 				}
