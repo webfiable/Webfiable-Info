@@ -13,7 +13,6 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 $option_keys = array(
-	'webfiable_site_id',
 	'webfiable_admin_email',
 	'webfiable_consent_ts',
 	'webfiable_endpoint_enabled',
