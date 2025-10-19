@@ -34,7 +34,7 @@ jobs:
           SLUG: webfiable-info
           ASSETS_DIR: .wordpress-org
           # Si NO usas .distignore, descomenta para excluir:
-          RSYNC_EXCLUDE: >
+          RSYNC_EXCLUDE: |
             .git/
             .github/
             .vscode/
