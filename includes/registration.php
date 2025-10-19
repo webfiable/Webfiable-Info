@@ -65,11 +65,6 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 
 	if ( is_wp_error( $response ) ) {
 		$result['error'] = $response->get_error_message();
-
-		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( '[Webfiable] proxy error: ' . $result['error'] );
-		}
-
 		return $result;
 	}
 
@@ -78,10 +73,6 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 
 	$result['http_code']     = $code;
 	$result['response_body'] = (string) $body;
-
-	if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-		error_log( '[Webfiable] proxy reply: code=' . $code . ' body=' . trim( (string) $body ) );
-	}
 
 	// Accept JSON true, or a raw "true" (with/without newline/quotes).
 	$json    = json_decode( $body, true );
