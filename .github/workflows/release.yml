@@ -33,22 +33,4 @@ jobs:
           SVN_PASSWORD: ${{ secrets.WPORG_PASSWORD }}
           SLUG: webfiable-info
           ASSETS_DIR: .wordpress-org
-          # Si NO usas .distignore, descomenta para excluir:
-          RSYNC_EXCLUDE: |
-            .git/
-            .github/
-            .vscode/
-            node_modules/
-            vendor/
-            tests/
-            coverage/
-            *.zip
-            *.tar.gz
-            composer.json
-            composer.lock
-            package.json
-            package-lock.json
-            webpack.config.js
-            phpcs.xml
-            phpunit.xml
-            README.md
+          # Use .distignore to control which files ship in the release.
