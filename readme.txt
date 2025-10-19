@@ -8,7 +8,7 @@ Stable tag: 2.0.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Webfiable Info connects your WordPress site to the Webfiable security service (https://webfiable.com) to monitor configuration health and receive actionable recommendations. The service is publicly available in white march (early access) and is free to use - no separate sign-up required.
+Connect your site to Webfiable (webfiable.com) to track config health and get security recommendations. Public early access (white march). Free.
 
 == Description ==
 
@@ -107,7 +107,6 @@ Update to ensure the WordPress.org release ships only production files; no actio
 == License ==
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
-
 
 
 
