@@ -4,7 +4,7 @@ Tags: security, monitoring, hardening, inventory, endpoint
 Requires at least: 4.7
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -83,6 +83,9 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Changelog ==
 
+= 2.0.2 =
+* Finalize release packaging so WordPress.org distributions only include production files.
+
 = 2.0.1 =
 * Ensure WordPress.org releases exclude development-only files.
 
@@ -98,13 +101,12 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Upgrade Notice ==
 
-= 2.0.1 =
-Update to ensure the WordPress.org release only ships production files; no action is required after updating.
+= 2.0.2 =
+Update to ensure the WordPress.org release ships only production files; no action is required after updating.
 
 == License ==
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
-
 
 
 
