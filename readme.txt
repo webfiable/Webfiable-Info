@@ -1,6 +1,6 @@
 === Webfiable Info ===
 Contributors: webfiable
-Tags: security, monitoring, WordPress security
+Tags: security, monitoring, hardening, inventory, endpoint
 Requires at least: 4.7
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -8,37 +8,39 @@ Stable tag: 2.0.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Webfiable is a monitoring plugin that provides insights into your site's health and security posture. Requires a free Webfiable subscription.
+Webfiable Info connects your WordPress site to the Webfiable security service (https://webfiable.com) to monitor configuration health and receive actionable recommendations. The service is publicly available in white march (early access) and is free to use - no separate sign-up required.
 
 == Description ==
 
-**Ensure your website's security posture and configuration health with monitoring and recommendations. Requires an active Webfiable subscription (currently free).**
+**Improve your site's security posture and configuration health with monitoring and recommendations.**
 
-The Webfiable Info plugin is a component of the Webfiable security service, designed to help you maintain a robust security posture for your WordPress website. By securely gathering information about your site's plugins, themes, and WordPress version, the plugin enables the Webfiable service to perform in-depth analysis and provide weekly recommendations tailored to your specific configuration.
+Webfiable Info is the on-site companion for the Webfiable security service (https://webfiable.com). It securely gathers information about your site's WordPress version, plugins, themes, and basic site metadata and registers your site with Webfiable so you can receive ongoing reports via email. You stay in control: consent is explicit, and the public endpoint is opt-in and verified on save.
+
+During the white march period, there is no separate signup or billing - the plugin registers your site automatically from the settings screen and you can use the service for free. A subscription may be required in the future; we will notify administrators well in advance.
 
 == Features ==
 
-* **Simple and Reliable Design**: Built with simplicity in mind, this plugin minimizes the risk of issues arising on your website and reduces the need for frequent updates, contributing to a stable and secure environment.
-* **Lightweight and Efficient**: The plugin is designed to be very lightweight, executing its tasks within seconds, and running no more than once per day, ensuring no impact on your website's performance.
-* **Secure Data Transmission**: Utilizes advanced hybrid encryption (AES + RSA) to securely transmit data to the Webfiable service.
-* **Proactive Security Monitoring**: Enables continuous monitoring of your site’s security posture and configuration health.
-* **Part of the Webfiable Service**: Requires an active Webfiable subscription (currently free).
+* **One-click registration**: Enter a report recipient email, grant consent, and enable the endpoint; Webfiable Info verifies the endpoint and registers the site automatically.
+* **Opt-in endpoint**: The public `/webfiable` endpoint is disabled by default and verified when enabled. If verification or registration fails, the plugin safely disables it.
+* **Consent-aware behavior**: Turning off consent simply saves your choice and disables the endpoint; you can re-enable later.
+* **Lightweight by design**: No heavy background jobs; the endpoint serves inventory on demand and runs in milliseconds.
+* **Secure by default**: Uses hybrid encryption (AES-256 + RSA-2048) to transport data.
+* **Part of the Webfiable service**: Currently in white march (early access) and free to use; a subscription may be required in the future. Learn more at https://webfiable.com.
 
 == Security Features ==
 
-Webfiable Info is built with security at its core, ensuring that your website’s data is protected at every stage:
+Webfiable Info is built with security at its core, ensuring that your website's data is protected at every stage:
 
-* **Hybrid Encryption**: Combines AES and RSA encryption to safeguard your data. The plugin uses AES-256 to encrypt the collected data, and then securely transmits the AES key by encrypting it with RSA-2048.
-* **Initialization Vector (IV)**: Each data transmission uses a unique Initialization Vector (IV) to ensure that even identical data produces different ciphertexts, enhancing security.
-* **RSA Key Management**: The RSA encryption ensures that only the Webfiable service can decrypt the transmitted data, using a private key that remains secure on the Webfiable infrastructure.
+* **Hybrid Encryption**: Combines AES and RSA. The inventory is encrypted with AES-256-CBC; the AES key is encrypted with RSA-2048.
+* **Fresh IV per response**: Each response uses a new IV so ciphertext is always unique.
+* **Public endpoint, private content**: The `/webfiable` endpoint can be accessed by anyone, but the payload is encrypted for Webfiable only.
+* **Rate limiting**: Basic per-IP rate limiting reduces abuse.
 
 == Why It Is Secure ==
 
-1. **Advanced Encryption Techniques**: Webfiable Info employs AES-256 for data encryption, a standard widely recognized for its strength and security. The AES key is then encrypted with RSA-2048, ensuring that even if the data is intercepted, it cannot be decrypted without the corresponding private RSA key, which is securely stored by Webfiable.
-
-2. **Data Integrity**: The use of a unique IV for each transmission guarantees that your data remains confidential and secure, preventing any potential attackers from predicting or replicating encrypted data streams.
-
-3. **Confidentiality by Design**: The plugin is designed to collect only the necessary information for security analysis, ensuring that your website's sensitive data is handled with the utmost care and never exposed.
+1. **Strong transport**: AES-256 for data, RSA-2048 for the key - only Webfiable can decrypt.
+2. **Unique IVs**: Each response is unique even for identical content.
+3. **Minimal inventory**: Only software inventory and basic metadata needed for analysis; no credentials or content are collected.
 
 == Installation ==
 
@@ -50,30 +52,68 @@ Webfiable Info is built with security at its core, ensuring that your website’
 6. Click `Install Now`.
 7. Once the installation is complete, click `Activate Plugin`.
 
+After activation:
+
+1. Go to `Settings -> Webfiable Info`.
+2. Enter the report recipient email and check the consent box.
+3. Enable the `/webfiable` endpoint and click `Save settings`.
+4. The plugin verifies the endpoint and completes registration. If verification fails, the endpoint will be disabled and a notice explains what to fix.
+
 == Frequently Asked Questions ==
 
-= Do I need a Webfiable subscription to use this plugin? =
+= Do I need a Webfiable subscription? =
 
-Yes, an active Webfiable subscription is required for the plugin to function. The plugin sends encrypted data to the Webfiable service, where it is analyzed as part of your subscription.
+Not during the white march (early access). The plugin registers your site automatically from the settings screen and you can use the service for free. A subscription may be required in the future. We will provide clear notice and a smooth upgrade path. See https://webfiable.com for updates.
 
-= How does the plugin ensure my data is secure? =
+= How is my data secured? =
 
-The plugin uses a hybrid encryption method, combining AES-256 and RSA-2048, to securely encrypt and transmit your website's data. This ensures that only the Webfiable service can decrypt and analyze the information.
+Data is encrypted on your site before transport using AES-256-CBC. The AES key is encrypted with RSA-2048 so only Webfiable can decrypt the payload.
 
-= What information does this plugin collect? =
+= What information is collected? =
 
-The plugin collects information about your installed plugins, themes, and the WordPress version. This data is used by the Webfiable service to assess your website's security posture and provide recommendations.
+Minimal inventory only: site URL, WordPress version, installed plugins and themes (name, slug, version, short description), a site identifier, consent timestamp, and the email you provide for reports. No user content or credentials.
+
+= What happens if I disable consent? =
+
+Your preference is saved immediately, and the `/webfiable` endpoint is turned off. You can re-enable consent and the endpoint at any time from Settings.
+
+= Why did registration fail? =
+
+The plugin enables and verifies the endpoint before registering. If your server blocks loopback requests, permalinks are misconfigured, or the OpenSSL PHP extension is missing, verification may fail. Fix the issue and click `Save settings` again - the plugin will retry.
 
 == Changelog ==
 
+= 2.0.0 =
+* New settings page under Settings -> Webfiable Info.
+* Opt-in `/webfiable` endpoint with on-save verification.
+* Automatic customer registration after successful verification.
+* Consent gating that saves your choice and disables the endpoint when consent is off.
+* Improved notices and lightweight, reliable design.
+
 = 1.4 =
-* Initial release with enhanced security features, including AES-256 encryption and RSA-2048 for key transmission.
+* Initial release with AES-256/RSA-2048 hybrid encryption.
 
 == Upgrade Notice ==
 
-= 1.4 =
-Initial release.
+= 2.0.0 =
+Visit Settings -> Webfiable Info to enter a report email, grant consent, and enable the endpoint. The plugin will verify and complete registration automatically.
 
 == License ==
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
