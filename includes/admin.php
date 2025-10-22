@@ -443,8 +443,10 @@ function webfiable_run_endpoint_test() {
 		webfiable_log_action(
 			'endpoint_test_success',
 			array(
-				'url'       => $verify_url,
-				'http_code' => $code,
+				'url'          => $verify_url,
+				'http_code'    => $code,
+				'body'         => $result['body'],
+				'decoded_body' => $json,
 			)
 		);
 		return $result;
