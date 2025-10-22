@@ -42,6 +42,12 @@ function webfiable_activate() {
 	}
 	webfiable_register_route();
 	flush_rewrite_rules();
+	webfiable_log_action(
+		'plugin_activated',
+		array(
+			'site_id' => webfiable_get_option( 'webfiable_site_id' ),
+		)
+	);
 }
 
 /**
@@ -51,4 +57,5 @@ function webfiable_activate() {
  */
 function webfiable_deactivate() {
 	flush_rewrite_rules();
+	webfiable_log_action( 'plugin_deactivated' );
 }

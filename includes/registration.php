@@ -25,6 +25,15 @@ defined( 'ABSPATH' ) || exit;
  */
 function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $proxy_base = 'https://webfiable.com' ) {
 	if ( '' === $site_id || '' === $site_url || '' === $admin_email ) {
+		webfiable_log_action(
+			'registration_missing_parameters',
+			array(
+				'site_id'     => $site_id,
+				'site_url'    => $site_url,
+				'admin_email' => $admin_email,
+			),
+			'error'
+		);
 		return array(
 			'success'       => false,
 			'endpoint'      => '',
@@ -52,6 +61,15 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 		'body'    => wp_json_encode( $payload ),
 	);
 
+	webfiable_log_action(
+		'registration_request',
+		array(
+			'endpoint' => $endpoint,
+			'payload'  => $payload,
+			'args'     => $args,
+		)
+	);
+
 	$result = array(
 		'success'       => false,
 		'endpoint'      => $endpoint,
@@ -65,6 +83,15 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 
 	if ( is_wp_error( $response ) ) {
 		$result['error'] = $response->get_error_message();
+		webfiable_log_action(
+			'registration_http_error',
+			array(
+				'endpoint' => $endpoint,
+				'error'    => $response->get_error_message(),
+				'data'     => $response->get_error_data(),
+			),
+			'error'
+		);
 		return $result;
 	}
 
@@ -79,12 +106,46 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 	$trimmed = strtolower( trim( (string) $body ) );
 	$success = ( true === $json ) || ( 'true' === $trimmed );
 
+	$headers = wp_remote_retrieve_headers( $response );
+	if ( is_object( $headers ) && method_exists( $headers, 'getAll' ) ) {
+		$headers = $headers->getAll();
+	}
+
+	webfiable_log_action(
+		'registration_response',
+		array(
+			'endpoint'          => $endpoint,
+			'http_code'         => $code,
+			'body'              => $result['response_body'],
+			'headers'           => $headers,
+			'decoded_body'      => $json,
+			'interpreted_match' => $success,
+		)
+	);
+
 	if ( $success ) {
 		$result['success'] = true;
+		webfiable_log_action(
+			'registration_success',
+			array(
+				'endpoint'  => $endpoint,
+				'http_code' => $code,
+			),
+			'info'
+		);
 		return $result;
 	}
 
 	$result['error'] = __( 'Unexpected API response.', 'webfiable-info' );
+	webfiable_log_action(
+		'registration_unexpected_response',
+		array(
+			'endpoint'  => $endpoint,
+			'http_code' => $code,
+			'body'      => $result['response_body'],
+		),
+		'warning'
+	);
 
 	return $result;
 }

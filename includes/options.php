@@ -19,6 +19,7 @@ function webfiable_default_options() {
 		'webfiable_admin_email'      => '',
 		'webfiable_consent_ts'       => 0,
 		'webfiable_endpoint_enabled' => 'yes',
+		'webfiable_action_log'       => array(),
 	);
 }
 

@@ -180,6 +180,16 @@ function webfiable_handle_settings_submission() {
 	$consent         = isset( $post_data['webfiable_consent'] ) ? 'yes' : 'no';
 	$enable          = isset( $post_data['webfiable_endpoint_enabled'] ) ? 'yes' : 'no';
 
+	webfiable_log_action(
+		'settings_submission_started',
+		array(
+			'email'             => $email,
+			'consent_requested' => $consent,
+			'endpoint_requested'=> $enable,
+			'user_id'           => get_current_user_id(),
+		)
+	);
+
 	$notice                 = '';
 	$notice_type            = 'success';
 	$endpoint_test_result   = null;
@@ -190,6 +200,14 @@ function webfiable_handle_settings_submission() {
 	if ( empty( $email ) || ! is_email( $email ) ) {
 		$notice      = __( 'Invalid email address.', 'webfiable-info' );
 		$notice_type = 'error';
+		webfiable_log_action(
+			'settings_validation_failed',
+			array(
+				'reason'       => 'invalid_email',
+				'provided_raw' => $raw_email,
+			),
+			'error'
+		);
 	} else {
 		$consent_granted    = ( 'yes' === $consent );
 		$endpoint_requested = ( 'yes' === $enable );
@@ -201,12 +219,26 @@ function webfiable_handle_settings_submission() {
 		if ( '' === $site_id ) {
 			$site_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'wf_', true );
 			webfiable_update_option( 'webfiable_site_id', $site_id );
+			webfiable_log_action(
+				'site_id_generated',
+				array(
+					'site_id' => $site_id,
+				)
+			);
 		}
 
 		// Persist state so the endpoint reflects the new values immediately.
 		webfiable_update_option( 'webfiable_consent_ts', $consent_ts_value );
 		webfiable_update_option( 'webfiable_admin_email', strtolower( $email ) );
 		webfiable_update_option( 'webfiable_endpoint_enabled', $enable );
+		webfiable_log_action(
+			'settings_persisted',
+			array(
+				'consent_ts'       => $consent_ts_value,
+				'admin_email'      => strtolower( $email ),
+				'endpoint_enabled' => $enable,
+			)
+		);
 
 		if ( 'yes' === $enable && 'yes' !== $previous_enabled_value ) {
 			// Ensure rewrite rules include the /webfiable endpoint immediately when turning it on.
@@ -216,9 +248,17 @@ function webfiable_handle_settings_submission() {
 			if ( function_exists( 'flush_rewrite_rules' ) ) {
 				flush_rewrite_rules( false );
 			}
+			webfiable_log_action(
+				'endpoint_enabled',
+				array(
+					'previous_value' => $previous_enabled_value,
+					'current_value'  => $enable,
+				)
+			);
 		}
 
 		if ( 'yes' === $enable ) {
+			webfiable_log_action( 'endpoint_test_started' );
 			$endpoint_test_result = webfiable_run_endpoint_test();
 
 			if ( empty( $endpoint_test_result['success'] ) ) {
@@ -226,10 +266,25 @@ function webfiable_handle_settings_submission() {
 				$enable      = 'no';
 				$notice      = __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
 				$notice_type = 'error';
+				webfiable_log_action(
+					'endpoint_test_failed',
+					array(
+						'result' => $endpoint_test_result,
+					),
+					'error'
+				);
 			}
 		}
 
 		if ( 'yes' === $enable ) {
+			webfiable_log_action(
+				'registration_attempt_started',
+				array(
+					'site_id'     => $site_id,
+					'site_url'    => untrailingslashit( home_url() ),
+					'admin_email' => strtolower( $email ),
+				)
+			);
 			$registration_result = webfiable_attempt_registration(
 				$site_id,
 				untrailingslashit( home_url() ),
@@ -242,15 +297,34 @@ function webfiable_handle_settings_submission() {
 			if ( $registration_success ) {
 				$notice      = __( 'Settings saved and registration completed.', 'webfiable-info' );
 				$notice_type = 'success';
+				webfiable_log_action(
+					'registration_completed',
+					array(
+						'endpoint' => isset( $registration_result['endpoint'] ) ? $registration_result['endpoint'] : '',
+					)
+				);
 			} else {
 				webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
 				$enable      = 'no';
 				$notice      = __( 'Registration failed; please review the API request details below and try again later.', 'webfiable-info' );
 				$notice_type = 'error';
+				webfiable_log_action(
+					'registration_failed',
+					array(
+						'result' => $registration_result,
+					),
+					'error'
+				);
 			}
 		} elseif ( '' === $notice ) {
 			$notice      = __( 'Settings saved.', 'webfiable-info' );
 			$notice_type = 'success';
+			webfiable_log_action(
+				'settings_saved_without_registration',
+				array(
+					'endpoint_enabled' => $enable,
+				)
+			);
 		}
 	}
 
@@ -259,6 +333,7 @@ function webfiable_handle_settings_submission() {
 	$result['notice_type']          = $notice_type;
 	$result['endpoint_test_result'] = $endpoint_test_result;
 	$result['registration_result']  = $registration_result;
+	$result['action_log']           = webfiable_get_action_log( 'request' );
 
 	return $result;
 }
@@ -303,20 +378,36 @@ function webfiable_run_endpoint_test() {
 		'decoded'   => null,
 	);
 
-	$response = wp_remote_get(
-		$verify_url,
+	$args = array(
+		'timeout' => 10,
+		'headers' => array(
+			'Cache-Control' => 'no-cache, no-store, must-revalidate',
+			'Pragma'        => 'no-cache',
+			'Expires'       => '0',
+		),
+	);
+
+	webfiable_log_action(
+		'endpoint_test_request',
 		array(
-			'timeout' => 10,
-			'headers' => array(
-				'Cache-Control' => 'no-cache, no-store, must-revalidate',
-				'Pragma'        => 'no-cache',
-				'Expires'       => '0',
-			),
+			'url'  => $verify_url,
+			'args' => $args,
 		)
 	);
 
+	$response = wp_remote_get( $verify_url, $args );
+
 	if ( is_wp_error( $response ) ) {
 		$result['error'] = $response->get_error_message();
+		webfiable_log_action(
+			'endpoint_test_error',
+			array(
+				'url'   => $verify_url,
+				'error' => $response->get_error_message(),
+				'data'  => $response->get_error_data(),
+			),
+			'error'
+		);
 		return $result;
 	}
 
@@ -332,6 +423,15 @@ function webfiable_run_endpoint_test() {
 			__( 'Unexpected HTTP status: %d', 'webfiable-info' ),
 			$code
 		);
+		webfiable_log_action(
+			'endpoint_test_unexpected_status',
+			array(
+				'url'       => $verify_url,
+				'http_code' => $code,
+				'body'      => $result['body'],
+			),
+			'warning'
+		);
 		return $result;
 	}
 
@@ -340,10 +440,27 @@ function webfiable_run_endpoint_test() {
 
 	if ( is_array( $json ) && isset( $json['encrypted_key'], $json['iv'], $json['data'] ) ) {
 		$result['success'] = true;
+		webfiable_log_action(
+			'endpoint_test_success',
+			array(
+				'url'       => $verify_url,
+				'http_code' => $code,
+			)
+		);
 		return $result;
 	}
 
 	$result['error'] = __( 'Unexpected response payload.', 'webfiable-info' );
+	webfiable_log_action(
+		'endpoint_test_unexpected_payload',
+		array(
+			'url'          => $verify_url,
+			'http_code'    => $code,
+			'body'         => $result['body'],
+			'decoded_body' => $json,
+		),
+		'warning'
+	);
 	return $result;
 }
 
@@ -372,6 +489,13 @@ function webfiable_render_settings_page() {
 	$consented    = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
 	$enabled      = ( webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes' );
 	$endpoint_url = home_url( '/' . WEBFIABLE_ENDPOINT_SLUG );
+	$action_log   = isset( $state['action_log'] ) ? $state['action_log'] : array();
+	$registration_failed = (
+		is_array( $state['registration_result'] )
+		&& array_key_exists( 'success', $state['registration_result'] )
+		&& empty( $state['registration_result']['success'] )
+	);
+	$show_action_log = ( ! empty( $action_log ) && ( $registration_failed || 'success' !== $notice_type ) );
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Webfiable Info', 'webfiable-info' ); ?></h1>
@@ -440,6 +564,46 @@ function webfiable_render_settings_page() {
 			<li><?php esc_html_e( 'Endpoint:', 'webfiable-info' ); ?> <?php echo $enabled ? esc_html__( 'Enabled', 'webfiable-info' ) : esc_html__( 'Disabled', 'webfiable-info' ); ?></li>
 			<li><?php esc_html_e( 'Consent:', 'webfiable-info' ); ?> <?php echo $consented ? esc_html__( 'Granted', 'webfiable-info' ) : esc_html__( 'Not granted', 'webfiable-info' ); ?></li>
 		</ul>
+
+		<?php if ( $show_action_log ) : ?>
+			<h2><?php esc_html_e( 'Latest Actions Log', 'webfiable-info' ); ?></h2>
+			<p><?php esc_html_e( 'Review the detailed endpoint and registration activity captured during the last submission attempt.', 'webfiable-info' ); ?></p>
+			<table class="widefat striped">
+				<thead>
+					<tr>
+						<th scope="col"><?php esc_html_e( 'Time', 'webfiable-info' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Level', 'webfiable-info' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Action', 'webfiable-info' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Details', 'webfiable-info' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $action_log as $entry ) : ?>
+						<?php
+						$timestamp = isset( $entry['timestamp'] ) ? absint( $entry['timestamp'] ) : 0;
+						$time_str  = $timestamp ? wp_date( 'Y-m-d H:i:s', $timestamp ) : '';
+						$level     = isset( $entry['level'] ) ? strtoupper( (string) $entry['level'] ) : '';
+						$action    = isset( $entry['action'] ) ? (string) $entry['action'] : '';
+						$context   = isset( $entry['context'] ) ? $entry['context'] : array();
+						$json_opts = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES;
+						$context_json = wp_json_encode( $context, $json_opts );
+						?>
+						<tr>
+							<td><code><?php echo esc_html( $time_str ); ?></code></td>
+							<td><?php echo esc_html( $level ); ?></td>
+							<td><?php echo esc_html( $action ); ?></td>
+							<td>
+								<?php if ( ! empty( $context_json ) ) : ?>
+									<pre><code><?php echo esc_html( $context_json ); ?></code></pre>
+								<?php else : ?>
+									<em><?php esc_html_e( 'No additional details.', 'webfiable-info' ); ?></em>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
 
 	</div>
 	<?php

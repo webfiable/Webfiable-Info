@@ -27,6 +27,7 @@ define( 'WEBFIABLE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/constants.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/i18n.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/options.php';
+require_once WEBFIABLE_PLUGIN_DIR . 'includes/logger.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/admin.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/routing.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/endpoint.php';
