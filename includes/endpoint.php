@@ -71,10 +71,10 @@ function webfiable_template_redirect() {
 			$slug          = ( '.' === $folder_or_dot ) ? basename( $plugin_slug, '.php' ) : $folder_or_dot;
 
 			$plugins_info[] = array(
-				'name'        => $plugin_data['Name'],
-				'slug'        => $slug,
-				'version'     => $plugin_data['Version'],
-				'description' => wp_strip_all_tags( $plugin_data['Description'] ),
+				'name'        => webfiable_sanitize_utf8_string( $plugin_data['Name'] ),
+				'slug'        => webfiable_sanitize_utf8_string( $slug ),
+				'version'     => webfiable_sanitize_utf8_string( $plugin_data['Version'] ),
+				'description' => webfiable_sanitize_utf8_string( wp_strip_all_tags( $plugin_data['Description'] ) ),
 			);
 		}
 
@@ -83,25 +83,27 @@ function webfiable_template_redirect() {
 		$themes_info      = array();
 		foreach ( $installed_themes as $theme_slug => $theme_data ) {
 			$themes_info[] = array(
-				'name'        => $theme_data->get( 'Name' ),
-				'slug'        => $theme_data->get_stylesheet(),
-				'version'     => $theme_data->get( 'Version' ),
-				'description' => wp_strip_all_tags( $theme_data->get( 'Description' ) ),
+				'name'        => webfiable_sanitize_utf8_string( $theme_data->get( 'Name' ) ),
+				'slug'        => webfiable_sanitize_utf8_string( $theme_data->get_stylesheet() ),
+				'version'     => webfiable_sanitize_utf8_string( $theme_data->get( 'Version' ) ),
+				'description' => webfiable_sanitize_utf8_string( wp_strip_all_tags( $theme_data->get( 'Description' ) ) ),
 			);
 		}
 
 		$payload = array(
-			'site_url'       => site_url(),
-			'wp_version'     => get_bloginfo( 'version' ),
-			'php_version'    => PHP_VERSION,
-			'plugin_version' => WEBFIABLE_INFO_VERSION,
-			'site_id'        => webfiable_get_option( 'webfiable_site_id' ),
-			'admin_email'    => $admin_email,
+			'site_url'       => webfiable_sanitize_utf8_string( site_url() ),
+			'wp_version'     => webfiable_sanitize_utf8_string( get_bloginfo( 'version' ) ),
+			'php_version'    => webfiable_sanitize_utf8_string( PHP_VERSION ),
+			'plugin_version' => webfiable_sanitize_utf8_string( WEBFIABLE_INFO_VERSION ),
+			'site_id'        => webfiable_sanitize_utf8_string( webfiable_get_option( 'webfiable_site_id' ) ),
+			'admin_email'    => webfiable_sanitize_utf8_string( $admin_email ),
 			'consent_ts'     => $consent_ts,
 			'ts'             => time(),
 			'plugins'        => $plugins_info,
 			'themes'         => $themes_info,
 		);
+
+		$payload = webfiable_normalize_payload_strings( $payload );
 
 		$json_data = wp_json_encode( $payload );
 
@@ -134,6 +136,57 @@ function webfiable_template_redirect() {
 			)
 		);
 		exit;
+		}
 	}
-}
 add_action( 'template_redirect', 'webfiable_template_redirect' );
+
+/**
+ * Normalize a string to valid UTF-8 and remove control characters.
+ *
+ * @param string $value Raw string.
+ * @return string Sanitized string.
+ */
+function webfiable_sanitize_utf8_string( $value ) {
+	if ( ! is_string( $value ) ) {
+		return '';
+	}
+
+	$clean = wp_check_invalid_utf8( $value, true );
+
+	if ( function_exists( 'mb_convert_encoding' ) ) {
+		$converted = @mb_convert_encoding( $clean, 'UTF-8', 'UTF-8' );
+		if ( false !== $converted ) {
+			$clean = $converted;
+		}
+	} elseif ( function_exists( 'iconv' ) ) {
+		$converted = @iconv( 'UTF-8', 'UTF-8//IGNORE', $clean );
+		if ( false !== $converted ) {
+			$clean = $converted;
+		}
+	}
+
+	$clean = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $clean );
+
+	return trim( $clean );
+}
+
+/**
+ * Recursively sanitize strings in the payload to ensure valid UTF-8.
+ *
+ * @param mixed $data Arbitrary payload data.
+ * @return mixed Sanitized data.
+ */
+function webfiable_normalize_payload_strings( $data ) {
+	if ( is_array( $data ) ) {
+		foreach ( $data as $key => $value ) {
+			$data[ $key ] = webfiable_normalize_payload_strings( $value );
+		}
+		return $data;
+	}
+
+	if ( is_string( $data ) ) {
+		return webfiable_sanitize_utf8_string( $data );
+	}
+
+	return $data;
+}
