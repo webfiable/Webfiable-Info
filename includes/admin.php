@@ -70,7 +70,7 @@ function webfiable_admin_notice_incomplete_setup() {
 
 	$email      = webfiable_get_option( 'webfiable_admin_email' );
 	$consent_ts = (int) webfiable_get_option( 'webfiable_consent_ts' );
-	$enabled    = ( webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes' );
+	$enabled    = webfiable_is_endpoint_enabled();
 
 	$issues = array();
 	if ( empty( $email ) || ! is_email( $email ) ) {
@@ -214,6 +214,10 @@ function webfiable_handle_settings_submission() {
 		$consent_ts_value   = $consent_granted ? time() : 0;
 		$enable             = ( $consent_granted && $endpoint_requested ) ? 'yes' : 'no';
 
+		if ( webfiable_is_endpoint_forced_enabled() ) {
+			$enable = 'yes';
+		}
+
 		// Ensure we have a site ID (normally set on activation).
 		$site_id = (string) webfiable_get_option( 'webfiable_site_id' );
 		if ( '' === $site_id ) {
@@ -262,9 +266,13 @@ function webfiable_handle_settings_submission() {
 			$endpoint_test_result = webfiable_run_endpoint_test();
 
 			if ( empty( $endpoint_test_result['success'] ) ) {
-				webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
-				$enable      = 'no';
-				$notice      = __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
+				if ( ! webfiable_is_endpoint_forced_enabled() ) {
+					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+					$enable = 'no';
+				}
+				$notice = webfiable_is_endpoint_forced_enabled()
+					? __( 'Endpoint could not be verified, but it remains enabled because WEBFIABLE_INFO_ACTIVATE_ENDPOINT is defined. Please check server configuration and try again.', 'webfiable-info' )
+					: __( 'Endpoint could not be verified and has been disabled. Please check server configuration and try again.', 'webfiable-info' );
 				$notice_type = 'error';
 				webfiable_log_action(
 					'endpoint_test_failed',
@@ -304,9 +312,13 @@ function webfiable_handle_settings_submission() {
 					)
 				);
 			} else {
-				webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
-				$enable      = 'no';
-				$notice      = __( 'Registration failed; please review the API request details below and try again later.', 'webfiable-info' );
+				if ( ! webfiable_is_endpoint_forced_enabled() ) {
+					webfiable_update_option( 'webfiable_endpoint_enabled', 'no' );
+					$enable = 'no';
+				}
+				$notice      = webfiable_is_endpoint_forced_enabled()
+					? __( 'Registration failed; the endpoint remains enabled because WEBFIABLE_INFO_ACTIVATE_ENDPOINT is defined. Please review the API request details below and try again later.', 'webfiable-info' )
+					: __( 'Registration failed; please review the API request details below and try again later.', 'webfiable-info' );
 				$notice_type = 'error';
 				webfiable_log_action(
 					'registration_failed',
@@ -489,7 +501,8 @@ function webfiable_render_settings_page() {
 		$email = get_option( 'admin_email' );
 	}
 	$consented    = (int) webfiable_get_option( 'webfiable_consent_ts' ) > 0;
-	$enabled      = ( webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes' );
+	$enabled      = webfiable_is_endpoint_enabled();
+	$endpoint_forced = webfiable_is_endpoint_forced_enabled();
 	$endpoint_url = home_url( '/' . WEBFIABLE_ENDPOINT_SLUG );
 	$action_log   = isset( $state['action_log'] ) ? $state['action_log'] : array();
 	$registration_failed = (
@@ -550,10 +563,13 @@ function webfiable_render_settings_page() {
 					<th scope="row"><?php esc_html_e( 'Public endpoint', 'webfiable-info' ); ?></th>
 					<td>
 						<label>
-							<input type="checkbox" name="webfiable_endpoint_enabled" <?php checked( $enabled ); ?> />
+							<input type="checkbox" name="webfiable_endpoint_enabled" <?php checked( $enabled ); ?> <?php disabled( $endpoint_forced ); ?> />
 							<?php esc_html_e( 'Enable /webfiable endpoint', 'webfiable-info' ); ?>
 						</label>
 						<p class="description"><code><?php echo esc_html( $endpoint_url ); ?></code></p>
+						<?php if ( $endpoint_forced ) : ?>
+							<p class="description"><strong><?php esc_html_e( 'Endpoint is forced on via WEBFIABLE_INFO_ACTIVATE_ENDPOINT.', 'webfiable-info' ); ?></strong></p>
+						<?php endif; ?>
 					</td>
 				</tr>
 			</table>
@@ -563,7 +579,17 @@ function webfiable_render_settings_page() {
 		<h2><?php esc_html_e( 'Status', 'webfiable-info' ); ?></h2>
 		<ul>
 			<li><?php esc_html_e( 'Site ID:', 'webfiable-info' ); ?> <code><?php echo esc_html( $site_id ); ?></code></li>
-			<li><?php esc_html_e( 'Endpoint:', 'webfiable-info' ); ?> <?php echo $enabled ? esc_html__( 'Enabled', 'webfiable-info' ) : esc_html__( 'Disabled', 'webfiable-info' ); ?></li>
+			<?php
+			$endpoint_status_text = $enabled ? esc_html__( 'Enabled', 'webfiable-info' ) : esc_html__( 'Disabled', 'webfiable-info' );
+			if ( $endpoint_forced ) {
+				$endpoint_status_text = sprintf(
+					/* translators: %s: Endpoint status (Enabled/Disabled). */
+					__( '%s (forced via WEBFIABLE_INFO_ACTIVATE_ENDPOINT)', 'webfiable-info' ),
+					$endpoint_status_text
+				);
+			}
+			?>
+			<li><?php esc_html_e( 'Endpoint:', 'webfiable-info' ); ?> <?php echo esc_html( $endpoint_status_text ); ?></li>
 			<li><?php esc_html_e( 'Consent:', 'webfiable-info' ); ?> <?php echo $consented ? esc_html__( 'Granted', 'webfiable-info' ) : esc_html__( 'Not granted', 'webfiable-info' ); ?></li>
 		</ul>
 

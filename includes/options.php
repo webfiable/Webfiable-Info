@@ -44,3 +44,25 @@ function webfiable_get_option( $key ) {
 function webfiable_update_option( $key, $value ) {
 	update_option( $key, $value, false ); // Store with autoload disabled.
 }
+
+/**
+ * Determine whether the endpoint should be force-enabled via wp-config.
+ *
+ * @return bool
+ */
+function webfiable_is_endpoint_forced_enabled() {
+	return defined( 'WEBFIABLE_INFO_ACTIVATE_ENDPOINT' ) && WEBFIABLE_INFO_ACTIVATE_ENDPOINT;
+}
+
+/**
+ * Check if the /webfiable endpoint is enabled (considering forced override).
+ *
+ * @return bool
+ */
+function webfiable_is_endpoint_enabled() {
+	if ( webfiable_is_endpoint_forced_enabled() ) {
+		return true;
+	}
+
+	return ( webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes' );
+}

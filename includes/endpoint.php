@@ -33,7 +33,7 @@ function webfiable_template_redirect() {
 			wp_send_json( array( 'error' => 'openssl_missing' ) );
 		}
 
-		$enabled     = webfiable_get_option( 'webfiable_endpoint_enabled' ) === 'yes';
+		$enabled     = webfiable_is_endpoint_enabled();
 		$admin_email = webfiable_get_option( 'webfiable_admin_email' );
 		$consent_ts  = (int) webfiable_get_option( 'webfiable_consent_ts' );
 
