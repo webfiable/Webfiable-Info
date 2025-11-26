@@ -14,7 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  */
 function webfiable_register_route() {
-	add_rewrite_rule( '^' . WEBFIABLE_ENDPOINT_SLUG . '$', 'index.php?webfiable_route=1', 'top' );
+	// Accept both /webfiable and /webfiable/ to avoid 404s on trailing-slash sites.
+	add_rewrite_rule( '^' . WEBFIABLE_ENDPOINT_SLUG . '/?$', 'index.php?webfiable_route=1', 'top' );
 }
 add_action( 'init', 'webfiable_register_route' );
 

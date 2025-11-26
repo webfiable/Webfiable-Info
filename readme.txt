@@ -4,7 +4,7 @@ Tags: security, monitoring, hardening, inventory, endpoint
 Requires at least: 4.7
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -83,6 +83,9 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Changelog ==
 
+= 2.0.4 =
+* Allow the `/webfiable` rewrite rule to match with or without a trailing slash so endpoint verification no longer fails on sites that enforce trailing slashes.
+
 = 2.0.3 =
 * Resolve Plugin Check (PCP) warnings by trimming short description and updating translation loader.
 
@@ -104,13 +107,12 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Upgrade Notice ==
 
-= 2.0.3 =
-Update to eliminate Plugin Check (PCP) warnings; no action is required after updating.
+= 2.0.4 =
+Update to fix endpoint verification on trailing-slash sites; reactivate the plugin or re-save Permalinks after updating.
 
 == License ==
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
-
 
 
 

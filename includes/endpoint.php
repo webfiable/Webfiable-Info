@@ -136,8 +136,8 @@ function webfiable_template_redirect() {
 			)
 		);
 		exit;
-		}
 	}
+}
 add_action( 'template_redirect', 'webfiable_template_redirect' );
 
 /**

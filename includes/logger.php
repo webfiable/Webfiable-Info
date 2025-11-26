@@ -60,7 +60,7 @@ function webfiable_logger_normalize_value( $value ) {
  * @return array<string, mixed> The logged entry.
  */
 function webfiable_log_action( $action, $context = array(), $level = 'info' ) {
-	static $request_log = array();
+	static $request_log   = array();
 	static $persisted_log = null;
 
 	$level  = strtolower( (string) $level );
@@ -76,7 +76,7 @@ function webfiable_log_action( $action, $context = array(), $level = 'info' ) {
 		'context'   => webfiable_logger_normalize_value( $context ),
 	);
 
-	$request_log[]                         = $entry;
+	$request_log[]                    = $entry;
 	$GLOBALS['webfiable_request_log'] = $request_log;
 
 	if ( null === $persisted_log ) {
@@ -84,7 +84,7 @@ function webfiable_log_action( $action, $context = array(), $level = 'info' ) {
 		$persisted_log = is_array( $stored ) ? $stored : array();
 	}
 
-	$persisted_log[]                       = $entry;
+	$persisted_log[]                     = $entry;
 	$GLOBALS['webfiable_persistent_log'] = $persisted_log;
 
 	$max_entries = (int) apply_filters( 'webfiable_action_log_max_entries', 100 );

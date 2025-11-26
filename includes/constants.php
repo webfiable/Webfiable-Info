@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; }
 
 // Keep version in sync with header.
-define( 'WEBFIABLE_INFO_VERSION', '2.0.3' );
+define( 'WEBFIABLE_INFO_VERSION', '2.0.4' );
 
 // Public endpoint slug.
 define( 'WEBFIABLE_ENDPOINT_SLUG', 'webfiable' );
