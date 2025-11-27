@@ -56,7 +56,7 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 	);
 
 	$args = array(
-		'timeout' => 15,
+		'timeout' => 60,
 		'headers' => array( 'Content-Type' => 'application/json' ),
 		'body'    => wp_json_encode( $payload ),
 	);

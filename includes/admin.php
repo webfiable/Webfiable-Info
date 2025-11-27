@@ -391,7 +391,7 @@ function webfiable_run_endpoint_test() {
 	);
 
 	$args = array(
-		'timeout' => 10,
+		'timeout' => 30,
 		'headers' => array(
 			'Cache-Control' => 'no-cache, no-store, must-revalidate',
 			'Pragma'        => 'no-cache',
