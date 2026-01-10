@@ -2,9 +2,9 @@
 Contributors: webfiable
 Tags: security, monitoring, hardening, inventory, endpoint
 Requires at least: 4.7
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.0.5
+Stable tag: 2.0.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -83,6 +83,9 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Changelog ==
 
+= 2.0.6 =
+* Confirmed WordPress 6.9 compatibility after passing all tests; no other changes to the plugin.
+
 = 2.0.5 =
 * Increase self-test timeout to 30s and activation call timeout to 60s to reduce registration failures on slower sites.
 
@@ -110,13 +113,12 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Upgrade Notice ==
 
-= 2.0.5 =
-Update to allow longer self-test and activation timeouts (30s/60s) so registration succeeds on slow sites.
+= 2.0.6 =
+Confirmed WordPress 6.9 compatibility after passing all tests; no other changes.
 
 == License ==
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
-
 
 
 
