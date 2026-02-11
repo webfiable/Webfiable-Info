@@ -532,7 +532,7 @@ function webfiable_render_settings_page() {
 
 		<!-- Page header -->
 		<div class="webfiable-header">
-			<div class="webfiable-logo"><span class="dashicons dashicons-shield"></span></div>
+			<div class="webfiable-logo"><img src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/icon.png' ); ?>" alt="" width="36" height="36" /></div>
 			<h1><?php esc_html_e( 'Webfiable Info', 'webfiable-info' ); ?></h1>
 			<span class="webfiable-version"><?php echo esc_html( 'v' . WEBFIABLE_INFO_VERSION ); ?></span>
 		</div>
