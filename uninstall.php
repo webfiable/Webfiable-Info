@@ -12,14 +12,14 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-$option_keys = array(
+$webfiable_option_keys = array(
 	'webfiable_admin_email',
 	'webfiable_consent_ts',
 	'webfiable_endpoint_enabled',
 );
 
-foreach ( $option_keys as $key ) {
-	delete_option( $key );
+foreach ( $webfiable_option_keys as $webfiable_key ) {
+	delete_option( $webfiable_key );
 }
 
 // No closing PHP tag.

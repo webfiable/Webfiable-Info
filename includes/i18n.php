@@ -24,6 +24,7 @@ function webfiable_load_textdomain() {
 	}
 
 	$locale = determine_locale();
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core WP hook.
 	$locale = apply_filters( 'plugin_locale', $locale, $domain );
 
 	load_textdomain( $domain, WP_LANG_DIR . '/plugins/' . $domain . '-' . $locale . '.mo' );

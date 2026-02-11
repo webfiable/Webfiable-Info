@@ -5,6 +5,15 @@
   <rule ref="WordPress-Extra"/>
   <rule ref="WordPress-Docs"/>
 
+  <!-- Prefijo global del plugin -->
+  <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+    <properties>
+      <property name="prefixes" type="array">
+        <element value="webfiable"/>
+      </property>
+    </properties>
+  </rule>
+
   <!-- Qué analizar y qué ignorar -->
   <file>./</file>
   <exclude-pattern>vendor/*</exclude-pattern>
