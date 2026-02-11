@@ -1,0 +1,133 @@
+/**
+ * Webfiable Info – Setup Notice Banner
+ *
+ * Lightweight styles loaded on all admin pages when setup is incomplete.
+ *
+ * @package Webfiable_Info
+ * @since   2.1.0
+ */
+
+.webfiable-setup-banner {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	margin: 15px 0;
+	padding: 16px 20px;
+	background: linear-gradient(135deg, #fff 0%, #f8fbff 100%);
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #0073aa;
+	border-radius: 4px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+	position: relative;
+}
+
+/* Icon column */
+.webfiable-setup-banner__icon {
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.webfiable-setup-banner__icon img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+/* Text column */
+.webfiable-setup-banner__body {
+	flex: 1;
+	min-width: 0;
+}
+
+.webfiable-setup-banner__title {
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 4px;
+	line-height: 1.4;
+}
+
+.webfiable-setup-banner__text {
+	font-size: 13px;
+	color: #50575e;
+	margin: 0 0 12px;
+	line-height: 1.5;
+}
+
+/* Checklist */
+.webfiable-setup-banner__checklist {
+	list-style: none;
+	margin: 0 0 14px;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.webfiable-setup-banner__checklist li {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: #2c3338;
+	line-height: 1.4;
+}
+
+.webfiable-setup-banner__checklist li .dashicons {
+	flex-shrink: 0;
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	color: #dba617;
+}
+
+/* CTA button */
+.webfiable-setup-banner__cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 16px;
+	font-size: 13px;
+	font-weight: 500;
+	color: #fff;
+	background: #0073aa;
+	border: none;
+	border-radius: 4px;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background 0.15s ease;
+	line-height: 1.4;
+}
+
+.webfiable-setup-banner__cta:hover,
+.webfiable-setup-banner__cta:focus {
+	background: #005a87;
+	color: #fff;
+}
+
+.webfiable-setup-banner__cta .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+/* Dismiss button override */
+.webfiable-setup-banner .notice-dismiss {
+	top: 12px;
+	right: 12px;
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+	.webfiable-setup-banner {
+		flex-direction: column;
+		gap: 10px;
+	}
+}

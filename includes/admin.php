@@ -87,25 +87,23 @@ function webfiable_admin_notice_incomplete_setup() {
 
 	$settings_url = admin_url( 'options-general.php?page=webfiable-info' );
 	?>
-	<div class="notice notice-warning is-dismissible">
-		<p>
-			<strong><?php esc_html_e( 'Webfiable Info needs a few more steps to get started.', 'webfiable-info' ); ?></strong>
-			<?php
-			echo wp_kses(
-				sprintf(
-					/* translators: %s: URL of the Webfiable Info settings page. */
-					__( 'Head over to <a href="%s">Settings → Webfiable Info</a> to finish setup.', 'webfiable-info' ),
-					esc_url( $settings_url )
-				),
-				array( 'a' => array( 'href' => true ) )
-			);
-			?>
-		</p>
-		<ul>
-			<?php foreach ( $issues as $msg ) : ?>
-				<li><?php echo esc_html( $msg ); ?></li>
-			<?php endforeach; ?>
-		</ul>
+	<div class="webfiable-setup-banner notice is-dismissible">
+		<div class="webfiable-setup-banner__icon">
+			<img src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/icon.png' ); ?>" alt="" width="40" height="40" />
+		</div>
+		<div class="webfiable-setup-banner__body">
+			<p class="webfiable-setup-banner__title"><?php esc_html_e( 'Welcome to Webfiable Info — you\'re almost there!', 'webfiable-info' ); ?></p>
+			<p class="webfiable-setup-banner__text"><?php esc_html_e( 'Complete a quick setup so we can start monitoring your site and sending you security reports.', 'webfiable-info' ); ?></p>
+			<ul class="webfiable-setup-banner__checklist">
+				<?php foreach ( $issues as $msg ) : ?>
+					<li><span class="dashicons dashicons-marker"></span> <?php echo esc_html( $msg ); ?></li>
+				<?php endforeach; ?>
+			</ul>
+			<a href="<?php echo esc_url( $settings_url ); ?>" class="webfiable-setup-banner__cta">
+				<span class="dashicons dashicons-admin-generic"></span>
+				<?php esc_html_e( 'Open Settings', 'webfiable-info' ); ?>
+			</a>
+		</div>
 	</div>
 	<?php
 }
@@ -479,21 +477,32 @@ function webfiable_run_endpoint_test() {
 }
 
 /**
- * Enqueue admin styles for the settings page only.
+ * Enqueue admin styles.
+ *
+ * Loads the notice banner CSS on every admin page (lightweight) and the
+ * full settings page CSS only on the plugin's own screen.
  *
  * @param string $hook_suffix Current admin page hook suffix.
  * @return void
  */
 function webfiable_enqueue_admin_assets( $hook_suffix ) {
-	if ( 'settings_page_webfiable-info' !== $hook_suffix ) {
-		return;
-	}
+	// Notice banner styles — needed on every admin page.
 	wp_enqueue_style(
-		'webfiable-admin',
-		WEBFIABLE_PLUGIN_URL . 'assets/css/admin.css',
+		'webfiable-notice',
+		WEBFIABLE_PLUGIN_URL . 'assets/css/notice.css',
 		array( 'dashicons' ),
 		WEBFIABLE_INFO_VERSION
 	);
+
+	// Full settings page styles.
+	if ( 'settings_page_webfiable-info' === $hook_suffix ) {
+		wp_enqueue_style(
+			'webfiable-admin',
+			WEBFIABLE_PLUGIN_URL . 'assets/css/admin.css',
+			array( 'dashicons' ),
+			WEBFIABLE_INFO_VERSION
+		);
+	}
 }
 add_action( 'admin_enqueue_scripts', 'webfiable_enqueue_admin_assets' );
 
