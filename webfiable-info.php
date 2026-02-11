@@ -3,7 +3,7 @@
  * Plugin Name: Webfiable Info
  * Plugin URI: https://wordpress.org/plugins/webfiable-info/
  * Description: Ensure your website's security posture and configuration health with monitoring and recommendations.
- * Version: 2.0.6
+ * Version: 2.1.0
  * Author: Webfiable Team
  * Author URI: https://webfiable.com
  * License: GPLv3 or later

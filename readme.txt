@@ -4,7 +4,7 @@ Tags: security, monitoring, hardening, inventory, endpoint
 Requires at least: 4.7
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.0.6
+Stable tag: 2.1.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -83,6 +83,10 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Changelog ==
 
+= 2.1.0 =
+* Friendlier, clearer messages and help text on the settings screen.
+* More modern, polished settings page layout with improved visual hierarchy.
+
 = 2.0.6 =
 * Confirmed WordPress 6.9 compatibility after passing all tests; no other changes to the plugin.
 
@@ -112,6 +116,9 @@ The plugin enables and verifies the endpoint before registering. If your server 
 * Initial release with AES-256/RSA-2048 hybrid encryption.
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+Friendlier settings experience and a refreshed, more modern interface.
 
 = 2.0.6 =
 Confirmed WordPress 6.9 compatibility after passing all tests; no other changes.
