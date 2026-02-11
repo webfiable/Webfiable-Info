@@ -92,7 +92,7 @@ function webfiable_admin_notice_incomplete_setup() {
 			<img src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/icon.png' ); ?>" alt="" width="40" height="40" />
 		</div>
 		<div class="webfiable-setup-banner__body">
-			<p class="webfiable-setup-banner__title"><?php esc_html_e( 'Welcome to Webfiable Info — you\'re almost there!', 'webfiable-info' ); ?></p>
+			<p class="webfiable-setup-banner__title"><?php esc_html_e( 'Welcome to Webfiable — you\'re almost there!', 'webfiable-info' ); ?></p>
 			<p class="webfiable-setup-banner__text"><?php esc_html_e( 'Complete a quick setup so we can start monitoring your site and sending you security reports.', 'webfiable-info' ); ?></p>
 			<ul class="webfiable-setup-banner__checklist">
 				<?php foreach ( $issues as $msg ) : ?>
@@ -538,6 +538,8 @@ function webfiable_render_settings_page() {
 	$show_action_log     = ( ! empty( $action_log ) && ( $registration_failed || 'success' !== $notice_type ) );
 	?>
 	<div class="wrap webfiable-wrap">
+
+		<hr class="wp-header-end" />
 
 		<!-- Page header -->
 		<div class="webfiable-header">

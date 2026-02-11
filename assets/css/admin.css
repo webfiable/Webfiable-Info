@@ -15,6 +15,14 @@
 	margin: 20px 0;
 }
 
+.webfiable-wrap .wp-header-end {
+	visibility: hidden;
+	margin: 0;
+	padding: 0;
+	height: 0;
+	border: 0;
+}
+
 .webfiable-header {
 	display: flex;
 	align-items: center;
