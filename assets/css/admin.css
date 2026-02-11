@@ -1,0 +1,550 @@
+/**
+ * Webfiable Info – Admin Settings Styles
+ *
+ * Modern card-based layout with clean typography and visual hierarchy.
+ *
+ * @package Webfiable_Info
+ * @since   2.1.0
+ */
+
+/* ------------------------------------------------------------------ */
+/*  Page header                                                       */
+/* ------------------------------------------------------------------ */
+.webfiable-wrap {
+	max-width: 860px;
+	margin: 20px 0;
+}
+
+.webfiable-header {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-bottom: 24px;
+}
+
+.webfiable-header .webfiable-logo {
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
+	flex-shrink: 0;
+}
+
+.webfiable-header h1 {
+	font-size: 23px;
+	font-weight: 600;
+	line-height: 1.3;
+	margin: 0;
+	padding: 0;
+	color: #1d2327;
+}
+
+.webfiable-header .webfiable-version {
+	font-size: 12px;
+	font-weight: 400;
+	color: #787c82;
+	background: #f0f0f1;
+	padding: 2px 8px;
+	border-radius: 10px;
+	align-self: center;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Notices                                                           */
+/* ------------------------------------------------------------------ */
+.webfiable-wrap .webfiable-notice {
+	margin: 0 0 20px;
+	padding: 12px 16px;
+	border-radius: 6px;
+	font-size: 13px;
+	line-height: 1.5;
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	border: none;
+	box-shadow: none;
+}
+
+.webfiable-notice::before {
+	font-family: dashicons;
+	font-size: 18px;
+	line-height: 1.4;
+	flex-shrink: 0;
+}
+
+.webfiable-notice--success {
+	background: #edfaef;
+	color: #1a5e26;
+	border-left: 4px solid #00a32a;
+}
+
+.webfiable-notice--success::before {
+	content: "\f147";
+	color: #00a32a;
+}
+
+.webfiable-notice--error {
+	background: #fef0f0;
+	color: #8a1f1f;
+	border-left: 4px solid #d63638;
+}
+
+.webfiable-notice--error::before {
+	content: "\f534";
+	color: #d63638;
+}
+
+.webfiable-notice--warning {
+	background: #fef8ee;
+	color: #6e4b00;
+	border-left: 4px solid #dba617;
+}
+
+.webfiable-notice--warning::before {
+	content: "\f227";
+	color: #dba617;
+}
+
+.webfiable-notice--info {
+	background: #f0f6fc;
+	color: #1d4a7a;
+	border-left: 4px solid #72aee6;
+}
+
+.webfiable-notice--info::before {
+	content: "\f348";
+	color: #72aee6;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Cards                                                             */
+/* ------------------------------------------------------------------ */
+.webfiable-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 0;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.webfiable-card__header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 16px 20px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.webfiable-card__header .dashicons {
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+	color: #0073aa;
+}
+
+.webfiable-card__header h2 {
+	font-size: 15px;
+	font-weight: 600;
+	margin: 0;
+	padding: 0;
+	color: #1d2327;
+}
+
+.webfiable-card__body {
+	padding: 20px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Form fields inside cards                                          */
+/* ------------------------------------------------------------------ */
+.webfiable-field {
+	margin-bottom: 20px;
+}
+
+.webfiable-field:last-child {
+	margin-bottom: 0;
+}
+
+.webfiable-field__label {
+	display: block;
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+	margin-bottom: 6px;
+}
+
+.webfiable-field__input input[type="email"] {
+	width: 100%;
+	max-width: 400px;
+	padding: 8px 12px;
+	font-size: 14px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background: #fff;
+	color: #2c3338;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	box-sizing: border-box;
+}
+
+.webfiable-field__input input[type="email"]:focus {
+	border-color: #0073aa;
+	box-shadow: 0 0 0 1px #0073aa;
+	outline: none;
+}
+
+.webfiable-field__help {
+	margin-top: 6px;
+	font-size: 12px;
+	color: #646970;
+	line-height: 1.5;
+}
+
+/* Checkbox rows */
+.webfiable-field__checkbox {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	line-height: 1.5;
+}
+
+.webfiable-field__checkbox input[type="checkbox"] {
+	margin-top: 3px;
+	flex-shrink: 0;
+}
+
+.webfiable-field__checkbox-text {
+	font-size: 13px;
+	color: #2c3338;
+}
+
+.webfiable-field__checkbox-text a {
+	color: #0073aa;
+	text-decoration: underline;
+	text-decoration-color: rgba(0, 115, 170, 0.35);
+}
+
+.webfiable-field__checkbox-text a:hover {
+	text-decoration-color: #0073aa;
+}
+
+.webfiable-field__endpoint-url {
+	margin-top: 8px;
+	padding: 6px 10px;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	display: inline-block;
+	font-size: 12px;
+	font-family: Consolas, Monaco, monospace;
+	color: #50575e;
+	word-break: break-all;
+}
+
+.webfiable-field__forced-note {
+	margin-top: 8px;
+	padding: 6px 10px;
+	background: #fef8ee;
+	border-left: 3px solid #dba617;
+	border-radius: 0 4px 4px 0;
+	font-size: 12px;
+	color: #6e4b00;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.webfiable-field__forced-note .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	color: #dba617;
+}
+
+/* Separator between form groups */
+.webfiable-field + .webfiable-field {
+	padding-top: 20px;
+	border-top: 1px solid #f0f0f1;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Primary action button                                             */
+/* ------------------------------------------------------------------ */
+.webfiable-card__footer {
+	padding: 16px 20px;
+	border-top: 1px solid #f0f0f1;
+	background: #f9f9f9;
+	border-radius: 0 0 8px 8px;
+}
+
+.webfiable-card__footer .button-primary {
+	padding: 6px 20px;
+	font-size: 13px;
+	font-weight: 500;
+	min-height: 36px;
+	border-radius: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Status grid                                                       */
+/* ------------------------------------------------------------------ */
+.webfiable-status-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 12px;
+}
+
+.webfiable-status-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 14px 16px;
+	background: #f9f9f9;
+	border-radius: 6px;
+	border: 1px solid #f0f0f1;
+}
+
+.webfiable-status-item__icon {
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	flex-shrink: 0;
+	font-size: 18px;
+}
+
+.webfiable-status-item__icon--id {
+	background: #f0f6fc;
+	color: #0073aa;
+}
+
+.webfiable-status-item__icon--connection {
+	background: #edfaef;
+	color: #00a32a;
+}
+
+.webfiable-status-item__icon--connection.is-disabled {
+	background: #fef0f0;
+	color: #d63638;
+}
+
+.webfiable-status-item__icon--consent {
+	background: #edfaef;
+	color: #00a32a;
+}
+
+.webfiable-status-item__icon--consent.is-disabled {
+	background: #fef8ee;
+	color: #dba617;
+}
+
+.webfiable-status-item__content {
+	flex: 1;
+	min-width: 0;
+}
+
+.webfiable-status-item__label {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #787c82;
+	margin-bottom: 2px;
+}
+
+.webfiable-status-item__value {
+	font-size: 13px;
+	color: #1d2327;
+	word-break: break-all;
+}
+
+.webfiable-status-item__value code {
+	font-size: 12px;
+	padding: 1px 5px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+}
+
+/* Status pills */
+.webfiable-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.6;
+}
+
+.webfiable-pill--green {
+	background: #edfaef;
+	color: #1a5e26;
+}
+
+.webfiable-pill--red {
+	background: #fef0f0;
+	color: #8a1f1f;
+}
+
+.webfiable-pill--yellow {
+	background: #fef8ee;
+	color: #6e4b00;
+}
+
+.webfiable-pill .dashicons {
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Activity log                                                      */
+/* ------------------------------------------------------------------ */
+.webfiable-log-toggle {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	font-size: 13px;
+	color: #0073aa;
+	font-weight: 500;
+	margin-top: 4px;
+}
+
+.webfiable-log-toggle:hover {
+	color: #005a87;
+}
+
+.webfiable-log-toggle .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	transition: transform 0.2s ease;
+}
+
+.webfiable-log-toggle[aria-expanded="true"] .dashicons {
+	transform: rotate(180deg);
+}
+
+.webfiable-log-content {
+	margin-top: 16px;
+}
+
+.webfiable-log-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.webfiable-log-table thead th {
+	background: #f6f7f7;
+	padding: 10px 12px;
+	text-align: left;
+	font-weight: 600;
+	color: #50575e;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.4px;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.webfiable-log-table tbody td {
+	padding: 8px 12px;
+	border-bottom: 1px solid #f0f0f1;
+	vertical-align: top;
+	color: #2c3338;
+}
+
+.webfiable-log-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.webfiable-log-table tbody tr:hover {
+	background: #f9f9f9;
+}
+
+.webfiable-log-table .webfiable-log-level {
+	display: inline-block;
+	padding: 1px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+}
+
+.webfiable-log-level--INFO {
+	background: #f0f6fc;
+	color: #1d4a7a;
+}
+
+.webfiable-log-level--WARNING {
+	background: #fef8ee;
+	color: #6e4b00;
+}
+
+.webfiable-log-level--ERROR {
+	background: #fef0f0;
+	color: #8a1f1f;
+}
+
+.webfiable-log-level--DEBUG {
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+.webfiable-log-table pre {
+	margin: 4px 0 0;
+	padding: 8px 10px;
+	background: #f6f7f7;
+	border: 1px solid #e2e4e7;
+	border-radius: 4px;
+	font-size: 11px;
+	line-height: 1.5;
+	max-height: 200px;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.webfiable-log-table .webfiable-no-details {
+	color: #a7aaad;
+	font-style: italic;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Responsive adjustments                                            */
+/* ------------------------------------------------------------------ */
+@media screen and (max-width: 782px) {
+	.webfiable-wrap {
+		margin: 10px 0;
+	}
+
+	.webfiable-status-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.webfiable-field__input input[type="email"] {
+		max-width: 100%;
+	}
+
+	.webfiable-header {
+		flex-wrap: wrap;
+	}
+}

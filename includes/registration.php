@@ -40,7 +40,7 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 			'payload'       => array(),
 			'http_code'     => null,
 			'response_body' => null,
-			'error'         => __( 'Missing registration parameters.', 'webfiable-info' ),
+			'error'         => __( 'Some required information is missing. Please fill in all fields and try again.', 'webfiable-info' ),
 		);
 	}
 
@@ -136,7 +136,7 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 		return $result;
 	}
 
-	$result['error'] = __( 'Unexpected API response.', 'webfiable-info' );
+	$result['error'] = __( 'We received an unexpected response from Webfiable. Please try again later.', 'webfiable-info' );
 	webfiable_log_action(
 		'registration_unexpected_response',
 		array(
