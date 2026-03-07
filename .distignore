@@ -5,7 +5,6 @@
 .gitignore
 .vscode/
 .wordpress-org/
-assets/
 node_modules/
 vendor/
 tests/
