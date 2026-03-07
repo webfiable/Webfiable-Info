@@ -50,7 +50,7 @@ msgstr "Activa la conexión de datos para que Webfiable pueda leer la informaci�
 
 #: includes/admin.php
 msgid "Welcome to Webfiable — you're almost there!"
-msgstr "¡Bienvenido a Webfiable — ya casi estás!"
+msgstr "¡Bienvenido a Webfiable, ya casi estás!"
 
 #: includes/admin.php
 msgid "Complete a quick setup so we can start monitoring your site and sending you security reports."
