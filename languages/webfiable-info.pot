@@ -1,0 +1,205 @@
+# Copyright (C) 2024-2026 Webfiable Team
+# This file is distributed under the GPLv3 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Webfiable Info 2.1.0\n"
+"Report-Msgid-Bugs-To: https://webfiable.com\n"
+"POT-Creation-Date: 2026-03-07 00:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Plugin Name of the plugin
+msgid "Webfiable Info"
+msgstr ""
+
+#. Description of the plugin
+msgid "Ensure your website's security posture and configuration health with monitoring and recommendations."
+msgstr ""
+
+#: includes/admin.php
+msgid "Settings"
+msgstr ""
+
+#: includes/admin.php
+msgid "Privacy"
+msgstr ""
+
+#: includes/admin.php
+msgid "Webfiable Info needs the OpenSSL extension to work. Please ask your hosting provider to enable it or check your server's PHP configuration."
+msgstr ""
+
+#: includes/admin.php
+msgid "Enter a valid email address to receive reports."
+msgstr ""
+
+#: includes/admin.php
+msgid "Agree to share your site details with Webfiable so we can generate reports."
+msgstr ""
+
+#: includes/admin.php
+msgid "Turn on the data connection so Webfiable can read your site info."
+msgstr ""
+
+#: includes/admin.php
+msgid "Welcome to Webfiable — you're almost there!"
+msgstr ""
+
+#: includes/admin.php
+msgid "Complete a quick setup so we can start monitoring your site and sending you security reports."
+msgstr ""
+
+#: includes/admin.php
+msgid "Open Settings"
+msgstr ""
+
+#: includes/admin.php
+msgid "Please enter a valid email address (e.g., you@example.com)."
+msgstr ""
+
+#: includes/admin.php
+msgid "We couldn't reach the data connection, but it stays on because your site configuration forces it. Go to Settings → Permalinks, click \"Save Changes\", then come back and try again."
+msgstr ""
+
+#: includes/admin.php
+msgid "We couldn't reach the data connection, so it has been turned off. Go to Settings → Permalinks, click \"Save Changes\", then come back and try again."
+msgstr ""
+
+#: includes/admin.php
+msgid "Settings saved — your site is now registered with Webfiable!"
+msgstr ""
+
+#: includes/admin.php
+msgid "Settings saved, but registration wasn't successful. The data connection stays on because your site configuration forces it. Check the details below and try again later."
+msgstr ""
+
+#: includes/admin.php
+msgid "Settings saved, but we couldn't complete the registration. Check the details below and try again later."
+msgstr ""
+
+#: includes/admin.php
+msgid "Settings saved successfully."
+msgstr ""
+
+#: includes/admin.php
+#, php-format
+msgid "The data connection returned an unexpected response (HTTP %d). Please try again or contact support if this persists."
+msgstr ""
+
+#: includes/admin.php
+msgid "The data connection returned an unexpected response format. Try saving your permalinks and try again."
+msgstr ""
+
+#: includes/admin.php
+msgid "Email for reports"
+msgstr ""
+
+#: includes/admin.php
+msgid "You'll receive your first detailed report and future summaries at this address."
+msgstr ""
+
+#: includes/admin.php
+msgid "Data sharing consent"
+msgstr ""
+
+#: includes/admin.php
+#, php-format
+msgid "I agree to share my site's plugin and theme information, along with my email, with Webfiable to receive security reports. See our <a href=\"%s\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."
+msgstr ""
+
+#: includes/admin.php
+msgid "Data connection"
+msgstr ""
+
+#: includes/admin.php
+msgid "Allow Webfiable to read site data through a secure connection"
+msgstr ""
+
+#: includes/admin.php
+msgid "This setting is locked on by your site configuration (WEBFIABLE_INFO_ACTIVATE_ENDPOINT)."
+msgstr ""
+
+#: includes/admin.php
+msgid "Save Settings"
+msgstr ""
+
+#: includes/admin.php
+msgid "Connection Status"
+msgstr ""
+
+#: includes/admin.php
+msgid "Your Site ID"
+msgstr ""
+
+#: includes/admin.php
+msgid "Data Connection"
+msgstr ""
+
+#: includes/admin.php
+msgid "Enabled"
+msgstr ""
+
+#: includes/admin.php
+msgid "Disabled"
+msgstr ""
+
+#: includes/admin.php
+msgid "(locked on by site configuration)"
+msgstr ""
+
+#: includes/admin.php
+msgid "Data Sharing"
+msgstr ""
+
+#: includes/admin.php
+msgid "Approved"
+msgstr ""
+
+#: includes/admin.php
+msgid "Not yet approved"
+msgstr ""
+
+#: includes/admin.php
+msgid "Recent Activity Log"
+msgstr ""
+
+#: includes/admin.php
+msgid "These details may help troubleshoot any issues with your last save attempt."
+msgstr ""
+
+#: includes/admin.php
+msgid "Show log entries"
+msgstr ""
+
+#: includes/admin.php
+msgid "Time"
+msgstr ""
+
+#: includes/admin.php
+msgid "Type"
+msgstr ""
+
+#: includes/admin.php
+msgid "Action"
+msgstr ""
+
+#: includes/admin.php
+msgid "Details"
+msgstr ""
+
+#: includes/admin.php
+msgid "No extra details available."
+msgstr ""
+
+#: includes/registration.php
+msgid "Some required information is missing. Please fill in all fields and try again."
+msgstr ""
+
+#: includes/registration.php
+msgid "We received an unexpected response from Webfiable. Please try again later."
+msgstr ""

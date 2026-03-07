@@ -154,11 +154,13 @@ function webfiable_sanitize_utf8_string( $value ) {
 	$clean = wp_check_invalid_utf8( $value, true );
 
 	if ( function_exists( 'mb_convert_encoding' ) ) {
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Intentional: mb_convert_encoding may warn on malformed input; return value is checked.
 		$converted = @mb_convert_encoding( $clean, 'UTF-8', 'UTF-8' );
 		if ( false !== $converted ) {
 			$clean = $converted;
 		}
 	} elseif ( function_exists( 'iconv' ) ) {
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Intentional: iconv may warn on malformed input; return value is checked.
 		$converted = @iconv( 'UTF-8', 'UTF-8//IGNORE', $clean );
 		if ( false !== $converted ) {
 			$clean = $converted;

@@ -1,0 +1,207 @@
+# Spanish (Spain) translation for Webfiable Info.
+# Copyright (C) 2024-2026 Webfiable Team
+# This file is distributed under the GPLv3 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Webfiable Info 2.1.0\n"
+"Report-Msgid-Bugs-To: https://webfiable.com\n"
+"POT-Creation-Date: 2026-03-07 00:00+0000\n"
+"PO-Revision-Date: 2026-03-07 00:00+0000\n"
+"Last-Translator: Webfiable Team <info@webfiable.com>\n"
+"Language-Team: Spanish (Spain) <info@webfiable.com>\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Webfiable Info build\n"
+
+#. Plugin Name of the plugin
+msgid "Webfiable Info"
+msgstr "Webfiable Info"
+
+#. Description of the plugin
+msgid "Ensure your website's security posture and configuration health with monitoring and recommendations."
+msgstr "Asegura la postura de seguridad y el estado de configuración de tu sitio web con monitoreo y recomendaciones."
+
+#: includes/admin.php
+msgid "Settings"
+msgstr "Ajustes"
+
+#: includes/admin.php
+msgid "Privacy"
+msgstr "Privacidad"
+
+#: includes/admin.php
+msgid "Webfiable Info needs the OpenSSL extension to work. Please ask your hosting provider to enable it or check your server's PHP configuration."
+msgstr "Webfiable Info necesita la extensión OpenSSL para funcionar. Por favor, pide a tu proveedor de hosting que la habilite o revisa la configuración PHP de tu servidor."
+
+#: includes/admin.php
+msgid "Enter a valid email address to receive reports."
+msgstr "Introduce una dirección de correo electrónico válida para recibir informes."
+
+#: includes/admin.php
+msgid "Agree to share your site details with Webfiable so we can generate reports."
+msgstr "Acepta compartir los datos de tu sitio con Webfiable para que podamos generar informes."
+
+#: includes/admin.php
+msgid "Turn on the data connection so Webfiable can read your site info."
+msgstr "Activa la conexión de datos para que Webfiable pueda leer la información de tu sitio."
+
+#: includes/admin.php
+msgid "Welcome to Webfiable — you're almost there!"
+msgstr "¡Bienvenido a Webfiable — ya casi estás!"
+
+#: includes/admin.php
+msgid "Complete a quick setup so we can start monitoring your site and sending you security reports."
+msgstr "Completa una configuración rápida para que podamos comenzar a monitorear tu sitio y enviarte informes de seguridad."
+
+#: includes/admin.php
+msgid "Open Settings"
+msgstr "Abrir Ajustes"
+
+#: includes/admin.php
+msgid "Please enter a valid email address (e.g., you@example.com)."
+msgstr "Por favor, introduce una dirección de correo electrónico válida (ej., tu@ejemplo.com)."
+
+#: includes/admin.php
+msgid "We couldn't reach the data connection, but it stays on because your site configuration forces it. Go to Settings → Permalinks, click \"Save Changes\", then come back and try again."
+msgstr "No pudimos alcanzar la conexión de datos, pero permanece activa porque la configuración de tu sitio la fuerza. Ve a Ajustes → Enlaces permanentes, haz clic en «Guardar cambios» y vuelve a intentarlo."
+
+#: includes/admin.php
+msgid "We couldn't reach the data connection, so it has been turned off. Go to Settings → Permalinks, click \"Save Changes\", then come back and try again."
+msgstr "No pudimos alcanzar la conexión de datos, por lo que se ha desactivado. Ve a Ajustes → Enlaces permanentes, haz clic en «Guardar cambios» y vuelve a intentarlo."
+
+#: includes/admin.php
+msgid "Settings saved — your site is now registered with Webfiable!"
+msgstr "¡Ajustes guardados — tu sitio ya está registrado en Webfiable!"
+
+#: includes/admin.php
+msgid "Settings saved, but registration wasn't successful. The data connection stays on because your site configuration forces it. Check the details below and try again later."
+msgstr "Ajustes guardados, pero el registro no fue exitoso. La conexión de datos permanece activa porque la configuración de tu sitio la fuerza. Revisa los detalles a continuación y vuelve a intentarlo más tarde."
+
+#: includes/admin.php
+msgid "Settings saved, but we couldn't complete the registration. Check the details below and try again later."
+msgstr "Ajustes guardados, pero no pudimos completar el registro. Revisa los detalles a continuación y vuelve a intentarlo más tarde."
+
+#: includes/admin.php
+msgid "Settings saved successfully."
+msgstr "Ajustes guardados correctamente."
+
+#: includes/admin.php
+#, php-format
+msgid "The data connection returned an unexpected response (HTTP %d). Please try again or contact support if this persists."
+msgstr "La conexión de datos devolvió una respuesta inesperada (HTTP %d). Por favor, inténtalo de nuevo o contacta con soporte si el problema persiste."
+
+#: includes/admin.php
+msgid "The data connection returned an unexpected response format. Try saving your permalinks and try again."
+msgstr "La conexión de datos devolvió un formato de respuesta inesperado. Guarda tus enlaces permanentes y vuelve a intentarlo."
+
+#: includes/admin.php
+msgid "Email for reports"
+msgstr "Correo electrónico para informes"
+
+#: includes/admin.php
+msgid "You'll receive your first detailed report and future summaries at this address."
+msgstr "Recibirás tu primer informe detallado y futuros resúmenes en esta dirección."
+
+#: includes/admin.php
+msgid "Data sharing consent"
+msgstr "Consentimiento para compartir datos"
+
+#: includes/admin.php
+#, php-format
+msgid "I agree to share my site's plugin and theme information, along with my email, with Webfiable to receive security reports. See our <a href=\"%s\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."
+msgstr "Acepto compartir la información de plugins y temas de mi sitio, junto con mi correo electrónico, con Webfiable para recibir informes de seguridad. Consulta nuestra <a href=\"%s\" target=\"_blank\" rel=\"noopener\">Política de Privacidad</a>."
+
+#: includes/admin.php
+msgid "Data connection"
+msgstr "Conexión de datos"
+
+#: includes/admin.php
+msgid "Allow Webfiable to read site data through a secure connection"
+msgstr "Permitir que Webfiable lea los datos del sitio a través de una conexión segura"
+
+#: includes/admin.php
+msgid "This setting is locked on by your site configuration (WEBFIABLE_INFO_ACTIVATE_ENDPOINT)."
+msgstr "Este ajuste está bloqueado por la configuración de tu sitio (WEBFIABLE_INFO_ACTIVATE_ENDPOINT)."
+
+#: includes/admin.php
+msgid "Save Settings"
+msgstr "Guardar Ajustes"
+
+#: includes/admin.php
+msgid "Connection Status"
+msgstr "Estado de la Conexión"
+
+#: includes/admin.php
+msgid "Your Site ID"
+msgstr "Tu ID de Sitio"
+
+#: includes/admin.php
+msgid "Data Connection"
+msgstr "Conexión de Datos"
+
+#: includes/admin.php
+msgid "Enabled"
+msgstr "Activada"
+
+#: includes/admin.php
+msgid "Disabled"
+msgstr "Desactivada"
+
+#: includes/admin.php
+msgid "(locked on by site configuration)"
+msgstr "(bloqueado por la configuración del sitio)"
+
+#: includes/admin.php
+msgid "Data Sharing"
+msgstr "Compartir Datos"
+
+#: includes/admin.php
+msgid "Approved"
+msgstr "Aprobado"
+
+#: includes/admin.php
+msgid "Not yet approved"
+msgstr "Aún no aprobado"
+
+#: includes/admin.php
+msgid "Recent Activity Log"
+msgstr "Registro de Actividad Reciente"
+
+#: includes/admin.php
+msgid "These details may help troubleshoot any issues with your last save attempt."
+msgstr "Estos detalles pueden ayudar a solucionar problemas con tu último intento de guardado."
+
+#: includes/admin.php
+msgid "Show log entries"
+msgstr "Mostrar entradas del registro"
+
+#: includes/admin.php
+msgid "Time"
+msgstr "Hora"
+
+#: includes/admin.php
+msgid "Type"
+msgstr "Tipo"
+
+#: includes/admin.php
+msgid "Action"
+msgstr "Acción"
+
+#: includes/admin.php
+msgid "Details"
+msgstr "Detalles"
+
+#: includes/admin.php
+msgid "No extra details available."
+msgstr "No hay detalles adicionales disponibles."
+
+#: includes/registration.php
+msgid "Some required information is missing. Please fill in all fields and try again."
+msgstr "Falta información requerida. Por favor, completa todos los campos y vuelve a intentarlo."
+
+#: includes/registration.php
+msgid "We received an unexpected response from Webfiable. Please try again later."
+msgstr "Recibimos una respuesta inesperada de Webfiable. Por favor, inténtalo de nuevo más tarde."

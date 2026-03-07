@@ -27,16 +27,35 @@ function webfiable_load_textdomain() {
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core WP hook.
 	$locale = apply_filters( 'plugin_locale', $locale, $domain );
 
-	load_textdomain( $domain, WP_LANG_DIR . '/plugins/' . $domain . '-' . $locale . '.mo' );
+	// Build a list of locales to try: exact match first, then base-language fallback.
+	$locales_to_try = array( $locale );
+	$lang_prefix    = substr( $locale, 0, 2 );
 
-	if ( is_textdomain_loaded( $domain ) ) {
-		return;
+	// For any Spanish variant (es_AR, es_MX, es_PE, …) fall back to es_ES.
+	if ( 'es' === $lang_prefix && 'es_ES' !== $locale ) {
+		$locales_to_try[] = 'es_ES';
 	}
 
-	$mofile = WEBFIABLE_PLUGIN_DIR . 'languages/' . $domain . '-' . $locale . '.mo';
+	foreach ( $locales_to_try as $try_locale ) {
+		// Try WP global languages directory first.
+		$global_mo = WP_LANG_DIR . '/plugins/' . $domain . '-' . $try_locale . '.mo';
+		if ( file_exists( $global_mo ) ) {
+			load_textdomain( $domain, $global_mo );
+		}
 
-	if ( file_exists( $mofile ) ) {
-		load_textdomain( $domain, $mofile );
+		if ( is_textdomain_loaded( $domain ) ) {
+			return;
+		}
+
+		// Try bundled languages directory.
+		$local_mo = WEBFIABLE_PLUGIN_DIR . 'languages/' . $domain . '-' . $try_locale . '.mo';
+		if ( file_exists( $local_mo ) ) {
+			load_textdomain( $domain, $local_mo );
+		}
+
+		if ( is_textdomain_loaded( $domain ) ) {
+			return;
+		}
 	}
 }
 add_action( 'init', 'webfiable_load_textdomain' );
