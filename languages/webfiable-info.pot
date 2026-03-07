@@ -2,7 +2,7 @@
 # This file is distributed under the GPLv3 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Webfiable Info 2.1.0\n"
+"Project-Id-Version: Webfiable Info 2.1.1\n"
 "Report-Msgid-Bugs-To: https://webfiable.com\n"
 "POT-Creation-Date: 2026-03-07 00:00+0000\n"
 "MIME-Version: 1.0\n"
