@@ -23,7 +23,7 @@
 
 ## Qué es Webfiable Info
 
-Webfiable Info es un plugin ligero y respetuoso con la privacidad que registra tu sitio en [Webfiable](https://webfiable.com) y expone un inventario mínimo de software — versión de WordPress, plugins y temas instalados, y metadatos básicos — a través de un endpoint cifrado. A cambio, recibes por correo un informe completo y resúmenes periódicos con recomendaciones accionables de seguridad.
+Webfiable Info es un plugin ligero y respetuoso con la privacidad que registra tu sitio en [Webfiable](https://webfiable.com) y expone un inventario mínimo de software, versión de WordPress, plugins y temas instalados, y metadatos básicos, a través de un endpoint cifrado. A cambio, recibes por correo un informe completo y resúmenes periódicos con recomendaciones accionables de seguridad.
 
 El proyecto está en fase beta pública. No hay costo, ni suscripción, ni registro externo: todo se gestiona desde el panel de ajustes del plugin. Si en el futuro se requiere suscripción, se avisará con antelación.
 
@@ -69,7 +69,7 @@ Solo un inventario mínimo: URL del sitio, versión de WordPress, plugins y tema
 Tu preferencia se guarda de inmediato y el endpoint `/webfiable` se apaga. Puedes reactivar el consentimiento y el endpoint en cualquier momento desde Ajustes.
 
 ### ¿Por qué podría fallar el registro?
-El plugin verifica el endpoint antes de registrar. Si tu servidor bloquea peticiones loopback, los enlaces permanentes están mal configurados o falta la extensión PHP OpenSSL, la verificación puede fallar. Corrige el problema y pulsa **Guardar ajustes** de nuevo — el plugin reintentará.
+El plugin verifica el endpoint antes de registrar. Si tu servidor bloquea peticiones loopback, los enlaces permanentes están mal configurados o falta la extensión PHP OpenSSL, la verificación puede fallar. Corrige el problema y pulsa **Guardar ajustes** de nuevo, el plugin reintentará.
 
 ## Contribuir
 
