@@ -1,70 +1,84 @@
-# Webfiable Info
+<p align="center">
+  <img src="https://webfiable.com/wp-content/uploads/2025/01/icon2.png" alt="Webfiable" width="60">
+</p>
+<h1 align="center">Webfiable Info</h1>
 
-> A lightweight, privacy-respecting companion plugin that connects your WordPress site to the [Webfiable](https://webfiable.com) security service for configuration monitoring and actionable recommendations.
+<p align="center">
+  <strong>El plugin que conecta tu WordPress con el servicio de seguridad de <a href="https://webfiable.com">Webfiable</a></strong>
+</p>
 
-- Status: Publicly available in white-march (early access)
-- License: GPLv3 or later
-- WordPress: 5.0+
-- PHP: 7.4+
+<p align="center">
+  <a href="https://webfiable.com">Web</a> ·
+  <a href="https://app.webfiable.com">Evaluación rápida</a> ·
+  <a href="https://wordpress.org/plugins/webfiable-info/">Plugin en WordPress.org</a>
+</p>
 
-## Overview
+<p align="center">
+  <img src="https://img.shields.io/wordpress/plugin/v/webfiable-info?label=versi%C3%B3n&color=blue" alt="Versión">
+  <img src="https://img.shields.io/wordpress/plugin/tested/webfiable-info?label=probado%20hasta%20WP&color=green" alt="Probado hasta WordPress">
+  <img src="https://img.shields.io/badge/licencia-GPL%20v3-blue" alt="Licencia">
+</p>
 
-Webfiable Info securely gathers a minimal software inventory (WordPress version, installed plugins and themes, and basic site metadata) and registers your site with [Webfiable](https://webfiable.com). You receive the first full report and ongoing summaries via email.
+---
 
-During the white-march period there is no separate sign-up or billing�the plugin registers your site from the settings screen and the service is free to use. A subscription may be required after general availability; administrators will be notified well in advance.
+## Qué es Webfiable Info
 
-## Features
+Webfiable Info es un plugin ligero y respetuoso con la privacidad que registra tu sitio en [Webfiable](https://webfiable.com) y expone un inventario mínimo de software — versión de WordPress, plugins y temas instalados, y metadatos básicos — a través de un endpoint cifrado. A cambio, recibes por correo un informe completo y resúmenes periódicos con recomendaciones accionables de seguridad.
 
-- One-click registration: enter a report email, grant consent, and enable the endpoint. The plugin verifies the endpoint and completes registration automatically.
-- Opt-in endpoint: the public `/webfiable` endpoint is disabled by default and verified when enabled. If verification or registration fails, the plugin safely disables it.
-- Consent-aware behavior: turning off consent simply saves your choice and disables the endpoint; you can re-enable later.
-- Lightweight by design: no heavy background jobs; the endpoint serves inventory on demand and runs in milliseconds.
-- Secure by default: hybrid encryption (AES-256-CBC + RSA-2048) protects the transport payload.
-- Part of the Webfiable service: learn more at [webfiable.com](https://webfiable.com).
+El proyecto está en fase beta pública. No hay costo, ni suscripción, ni registro externo: todo se gestiona desde el panel de ajustes del plugin. Si en el futuro se requiere suscripción, se avisará con antelación.
 
-## Security
+## Características
 
-- Hybrid Encryption: inventory is encrypted with AES-256-CBC; the AES key is encrypted with RSA-2048.
-- Fresh IV per response: each response uses a new IV so ciphertext is always unique.
-- Public endpoint, private content: the `/webfiable` endpoint may be accessed publicly, but the payload can only be decrypted by Webfiable.
-- Rate limiting: basic per-IP limiting reduces abuse.
+- **Registro en un clic:** introduce un email para los informes, da tu consentimiento y activa el endpoint. El plugin lo verifica y completa el registro automáticamente.
+- **Endpoint opt-in:** el endpoint público `/webfiable` viene desactivado por defecto. Si la verificación o el registro fallan, se desactiva de forma segura.
+- **Consentimiento reversible:** desactivar el consentimiento guarda tu preferencia y apaga el endpoint al instante. Puedes reactivarlo cuando quieras.
+- **Ligero por diseño:** sin procesos pesados en segundo plano. El endpoint responde bajo demanda en milisegundos.
+- **Seguro por defecto:** cifrado híbrido AES-256-CBC + RSA-2048 protege cada transmisión.
+- **Parte del ecosistema Webfiable:** más información en [webfiable.com](https://webfiable.com).
 
-## Installation & Setup
+## Seguridad
 
-1. Install the plugin (zip upload or from source).
-2. Activate it in WordPress.
-3. Go to Settings -> Webfiable Info.
-4. Enter the report recipient email and check the consent box.
-5. Enable the `/webfiable` endpoint and click �Save settings�.
-6. The plugin verifies the endpoint and completes registration. If verification fails, a notice explains what to fix and the endpoint is safely disabled.
+Webfiable Info está diseñado para que no tengas que confiar a ciegas:
 
-## FAQ
+- **Cifrado híbrido:** el inventario se cifra con AES-256-CBC; la clave AES se protege con RSA-2048. Solo Webfiable puede descifrar el contenido.
+- **IV único por respuesta:** cada respuesta genera un nuevo vector de inicialización, garantizando que el cifrado sea siempre distinto.
+- **Endpoint público, contenido privado:** el endpoint `/webfiable` es accesible, pero el payload solo lo descifra Webfiable.
+- **Limitación por IP:** protección básica contra abuso mediante rate limiting.
 
-### Do I need a Webfiable subscription?
-Not during white-march (early access). The plugin registers your site automatically and the service is free to use. When the service launches publicly, a subscription may be required. We will provide clear notice and a smooth path to upgrade. See updates at [webfiable.com](https://webfiable.com).
+## Instalación y configuración
 
-### How is my data secured?
-Data is encrypted on your site before transport using AES-256-CBC. The AES key is encrypted with RSA-2048 so only Webfiable can decrypt the payload.
+1. Instala el plugin (subida de ZIP o desde código fuente).
+2. Actívalo en WordPress.
+3. Ve a **Ajustes → Webfiable Info**.
+4. Introduce el correo del destinatario del informe y marca la casilla de consentimiento.
+5. Activa el endpoint `/webfiable` y haz clic en **Guardar ajustes**.
+6. El plugin verifica el endpoint y completa el registro. Si la verificación falla, un aviso te indica qué corregir y el endpoint se desactiva de forma segura.
 
-### What information is collected?
-Minimal inventory only: site URL, WordPress version, installed plugins and themes (name, slug, version, short description), a site identifier, consent timestamp, and the email you provide for reports. No user content or credentials.
+## Preguntas frecuentes
 
-### What happens if I disable consent?
-Your preference is saved immediately, and the `/webfiable` endpoint is turned off. You can re-enable consent and the endpoint at any time from Settings.
+### ¿Necesito una suscripción a Webfiable?
+No durante la beta pública. El plugin registra tu sitio automáticamente y el servicio es gratuito. Si se introduce una suscripción en el futuro, recibirás aviso previo y una ruta clara de actualización. Consulta novedades en [webfiable.com](https://webfiable.com).
 
-### Why might registration fail?
-The plugin verifies the endpoint before registering. If your server blocks loopback requests, permalinks are misconfigured, or the PHP OpenSSL extension is missing, verification may fail. Fix the issue and click "Save settings" again � the plugin will retry.
+### ¿Cómo se protege mi información?
+Los datos se cifran en tu sitio antes de cualquier transmisión con AES-256-CBC. La clave AES se cifra con RSA-2048, de modo que solo Webfiable puede leer el contenido.
 
-## Contributing
-Issues and PRs are welcome. Please keep changes focused and consistent with the existing code style.
+### ¿Qué información se recopila?
+Solo un inventario mínimo: URL del sitio, versión de WordPress, plugins y temas instalados (nombre, slug, versión, descripción breve), un identificador del sitio, marca de tiempo de consentimiento y el correo que proporcionas para los informes. Sin contenido de usuarios ni credenciales.
 
-## License
-GPLv3 or later. See the [LICENSE](https://www.gnu.org/licenses/gpl-3.0.html).
+### ¿Qué pasa si desactivo el consentimiento?
+Tu preferencia se guarda de inmediato y el endpoint `/webfiable` se apaga. Puedes reactivar el consentimiento y el endpoint en cualquier momento desde Ajustes.
 
+### ¿Por qué podría fallar el registro?
+El plugin verifica el endpoint antes de registrar. Si tu servidor bloquea peticiones loopback, los enlaces permanentes están mal configurados o falta la extensión PHP OpenSSL, la verificación puede fallar. Corrige el problema y pulsa **Guardar ajustes** de nuevo — el plugin reintentará.
 
+## Contribuir
 
+Issues y PRs son bienvenidos. Mantén los cambios enfocados y coherentes con el estilo de código existente.
 
+## Licencia
 
+GPL v3 o posterior. Consulta la [licencia completa](https://www.gnu.org/licenses/gpl-3.0.html).
 
+---
 
-
+<p align="center"><sub>Proyecto personal en fase beta · No comercial · Hecho con curiosidad y café ☕</sub></p>
