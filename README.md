@@ -79,6 +79,10 @@ Issues y PRs son bienvenidos. Mantén los cambios enfocados y coherentes con el 
 
 GPL v3 o posterior. Consulta la [licencia completa](https://www.gnu.org/licenses/gpl-3.0.html).
 
+## Changelog
+
+Consulta el [changelog completo en WordPress.org](https://wordpress.org/plugins/webfiable-info/#developers).
+
 ---
 
 <p align="center"><sub>Proyecto personal en fase beta · No comercial · Hecho con curiosidad y café ☕</sub></p>
