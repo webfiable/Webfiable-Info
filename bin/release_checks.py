@@ -22,6 +22,7 @@ if sys.version_info < (3, 10):
     sys.exit(2)
 
 import argparse  # noqa: E402
+import difflib  # noqa: E402
 import io  # noqa: E402
 import json  # noqa: E402
 import os  # noqa: E402
@@ -434,10 +435,20 @@ def check_i18n(root):
         if r.returncode != 0:
             problems.append("msgfmt --check failed: " + r.stderr.decode("utf-8", "replace").strip())
         else:
-            fresh = subprocess.run(["msgunfmt", "-"], input=r.stdout, capture_output=True).stdout
-            committed = subprocess.run(["msgunfmt", mo_path], capture_output=True).stdout
+            fresh_run = subprocess.run(["msgunfmt", "-"], input=r.stdout, capture_output=True)
+            committed_run = subprocess.run(["msgunfmt", mo_path], capture_output=True)
+            fresh, committed = fresh_run.stdout, committed_run.stdout
             if fresh != committed:
-                problems.append("the committed .mo is not the compiled .po")
+                for label, run in (("committed .mo", committed_run), ("msgfmt(.po)", fresh_run)):
+                    err = run.stderr.decode("utf-8", "replace").strip()
+                    print(f"    msgunfmt {label}: exit {run.returncode}, {len(run.stdout)} bytes" + (f", stderr: {err[:300]}" if err else ""))
+                diff = list(difflib.unified_diff(
+                    committed.decode("utf-8", "replace").splitlines(),
+                    fresh.decode("utf-8", "replace").splitlines(),
+                    "msgunfmt committed .mo", "msgunfmt msgfmt(.po)", lineterm="", n=1))
+                for line in diff[:60]:
+                    print("    " + line)
+                problems.append(f"the committed .mo is not the compiled .po ({len(diff)} diff lines)")
     elif os.environ.get("CI"):
         problems.append("GNU gettext (msgfmt, msgunfmt) is required in CI")
     else:
