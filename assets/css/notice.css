@@ -1,27 +1,35 @@
 /**
- * Webfiable Info – Setup Notice Banner
+ * Webfiable Análisis de Sitios – setup notice banner.
  *
- * Lightweight styles loaded on all admin pages when setup is incomplete.
+ * Lightweight styles loaded on all admin pages when setup is incomplete. The
+ * banner is not shown on the plugin's own settings page. WordPress's notice
+ * idiom: white surface, 4 px left border, here in the Webfiable ink.
  *
  * @package Webfiable_Info
  * @since   2.1.0
  */
 
 .webfiable-setup-banner {
+	--wf-ink: #0e1116;
+	--wf-paper: #f4f2ec;
+	--wf-graphite: #5a5f6a;
+	--wf-border: #e2e0d6;
+	--wf-surface: #fff;
+	--wf-ink-hover: #262a31;
 	display: flex;
 	align-items: flex-start;
 	gap: 16px;
 	margin: 15px 0;
 	padding: 16px 20px;
-	background: linear-gradient(135deg, #fff 0%, #f8fbff 100%);
-	border: 1px solid #c3c4c7;
-	border-left: 4px solid #0073aa;
+	background: var(--wf-surface);
+	border: 1px solid var(--wf-border);
+	border-left: 4px solid var(--wf-ink);
 	border-radius: 4px;
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+	box-shadow: none;
 	position: relative;
 }
 
-/* Icon column */
+/* Icon column: the Webfiable tile */
 .webfiable-setup-banner__icon {
 	flex-shrink: 0;
 	width: 40px;
@@ -49,14 +57,14 @@
 .webfiable-setup-banner__title {
 	font-size: 14px;
 	font-weight: 600;
-	color: #1d2327;
+	color: var(--wf-ink);
 	margin: 0 0 4px;
 	line-height: 1.4;
 }
 
 .webfiable-setup-banner__text {
 	font-size: 13px;
-	color: #50575e;
+	color: var(--wf-graphite);
 	margin: 0 0 12px;
 	line-height: 1.5;
 }
@@ -76,7 +84,7 @@
 	align-items: center;
 	gap: 6px;
 	font-size: 13px;
-	color: #2c3338;
+	color: var(--wf-ink);
 	line-height: 1.4;
 }
 
@@ -85,31 +93,38 @@
 	width: 16px;
 	height: 16px;
 	font-size: 16px;
-	color: #dba617;
+	color: var(--wf-graphite);
 }
 
-/* CTA button */
+/* CTA button: flat ink with paper text */
 .webfiable-setup-banner__cta {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 	padding: 7px 16px;
+	min-height: 40px;
+	box-sizing: border-box;
 	font-size: 13px;
 	font-weight: 500;
-	color: #fff;
-	background: #0073aa;
+	color: var(--wf-paper);
+	background: var(--wf-ink);
 	border: none;
 	border-radius: 4px;
 	text-decoration: none;
 	cursor: pointer;
-	transition: background 0.15s ease;
 	line-height: 1.4;
 }
 
 .webfiable-setup-banner__cta:hover,
 .webfiable-setup-banner__cta:focus {
-	background: #005a87;
-	color: #fff;
+	background: var(--wf-ink-hover);
+	color: var(--wf-paper);
+}
+
+.webfiable-setup-banner__cta:focus {
+	outline: 2px solid var(--wf-ink);
+	outline-offset: 2px;
+	box-shadow: none;
 }
 
 .webfiable-setup-banner__cta .dashicons {
@@ -125,6 +140,12 @@
 }
 
 /* Responsive */
+@media screen and (max-width: 782px) {
+	.webfiable-setup-banner__cta {
+		min-height: 44px;
+	}
+}
+
 @media screen and (max-width: 600px) {
 	.webfiable-setup-banner {
 		flex-direction: column;

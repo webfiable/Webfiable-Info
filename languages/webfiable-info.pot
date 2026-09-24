@@ -95,6 +95,42 @@ msgid "La conexión de datos ha devuelto una respuesta con un formato inesperado
 msgstr ""
 
 #: includes/admin.php
+msgid "Análisis de Sitios"
+msgstr ""
+
+#: includes/admin.php
+msgid "Registro de actividad reciente"
+msgstr ""
+
+#: includes/admin.php
+msgid "Estos detalles pueden ayudar a entender qué ha pasado en el último guardado."
+msgstr ""
+
+#: includes/admin.php
+msgid "Mostrar las entradas del registro"
+msgstr ""
+
+#: includes/admin.php
+msgid "Hora"
+msgstr ""
+
+#: includes/admin.php
+msgid "Tipo"
+msgstr ""
+
+#: includes/admin.php
+msgid "Acción"
+msgstr ""
+
+#: includes/admin.php
+msgid "Detalles"
+msgstr ""
+
+#: includes/admin.php
+msgid "Sin más detalles."
+msgstr ""
+
+#: includes/admin.php
 msgid "Correo"
 msgstr ""
 
@@ -156,38 +192,6 @@ msgstr ""
 
 #: includes/admin.php
 msgid "Pendiente de aceptar"
-msgstr ""
-
-#: includes/admin.php
-msgid "Registro de actividad reciente"
-msgstr ""
-
-#: includes/admin.php
-msgid "Estos detalles pueden ayudar a entender qué ha pasado en el último guardado."
-msgstr ""
-
-#: includes/admin.php
-msgid "Mostrar las entradas del registro"
-msgstr ""
-
-#: includes/admin.php
-msgid "Hora"
-msgstr ""
-
-#: includes/admin.php
-msgid "Tipo"
-msgstr ""
-
-#: includes/admin.php
-msgid "Acción"
-msgstr ""
-
-#: includes/admin.php
-msgid "Detalles"
-msgstr ""
-
-#: includes/admin.php
-msgid "Sin más detalles."
 msgstr ""
 
 #: includes/registration.php

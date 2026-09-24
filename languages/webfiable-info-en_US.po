@@ -101,6 +101,42 @@ msgid "La conexión de datos ha devuelto una respuesta con un formato inesperado
 msgstr "The data connection returned an unexpected response format. Try saving your permalinks and try again."
 
 #: includes/admin.php
+msgid "Análisis de Sitios"
+msgstr "Análisis de Sitios"
+
+#: includes/admin.php
+msgid "Registro de actividad reciente"
+msgstr "Recent Activity Log"
+
+#: includes/admin.php
+msgid "Estos detalles pueden ayudar a entender qué ha pasado en el último guardado."
+msgstr "These details may help troubleshoot any issues with your last save attempt."
+
+#: includes/admin.php
+msgid "Mostrar las entradas del registro"
+msgstr "Show log entries"
+
+#: includes/admin.php
+msgid "Hora"
+msgstr "Time"
+
+#: includes/admin.php
+msgid "Tipo"
+msgstr "Type"
+
+#: includes/admin.php
+msgid "Acción"
+msgstr "Action"
+
+#: includes/admin.php
+msgid "Detalles"
+msgstr "Details"
+
+#: includes/admin.php
+msgid "Sin más detalles."
+msgstr "No extra details available."
+
+#: includes/admin.php
 msgid "Correo"
 msgstr "Email"
 
@@ -163,38 +199,6 @@ msgstr "Approved"
 #: includes/admin.php
 msgid "Pendiente de aceptar"
 msgstr "Not yet approved"
-
-#: includes/admin.php
-msgid "Registro de actividad reciente"
-msgstr "Recent Activity Log"
-
-#: includes/admin.php
-msgid "Estos detalles pueden ayudar a entender qué ha pasado en el último guardado."
-msgstr "These details may help troubleshoot any issues with your last save attempt."
-
-#: includes/admin.php
-msgid "Mostrar las entradas del registro"
-msgstr "Show log entries"
-
-#: includes/admin.php
-msgid "Hora"
-msgstr "Time"
-
-#: includes/admin.php
-msgid "Tipo"
-msgstr "Type"
-
-#: includes/admin.php
-msgid "Acción"
-msgstr "Action"
-
-#: includes/admin.php
-msgid "Detalles"
-msgstr "Details"
-
-#: includes/admin.php
-msgid "Sin más detalles."
-msgstr "No extra details available."
 
 #: includes/registration.php
 msgid "Falta información obligatoria. Rellena todos los campos y vuelve a intentarlo."

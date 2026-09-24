@@ -1,7 +1,8 @@
 name: CI
 
 # Every pull request and every push to main: version coherence, the release
-# checks' self-test, the English translation, phpcs, a PHP 7.4 parse of the shipped files, and the zip a
+# checks' self-test, the English translation, the PHP unit tests (8.3 and 7.4), phpcs, a PHP 7.4 parse
+# of the shipped files, and the zip a
 # release would publish, built by the deploy action in dry-run mode, inspected
 # and run through Plugin Check. No secret is used anywhere in this workflow.
 # Every action is pinned to a full commit SHA; the comment names its tag.
@@ -42,6 +43,9 @@ jobs:
           php-version: '8.3'
           tools: 'composer:v2'
           coverage: none
+
+      - name: PHP unit tests (PHP 8.3)
+        run: php tests/run.php
 
       - name: composer install
         run: composer install --no-interaction --no-progress --prefer-dist
@@ -88,6 +92,9 @@ jobs:
 
       - name: No PHP 8.0-only function or syntax in shipped files
         run: python3 bin/release_checks.py php74
+
+      - name: PHP unit tests (PHP 7.4)
+        run: php tests/run.php
 
   package:
     runs-on: ubuntu-24.04

@@ -67,6 +67,11 @@ function webfiable_admin_notice_incomplete_setup() {
 		return; }
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return; }
+	// On its own settings page the banner would link to itself and stack on the page's notice.
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( $screen && 'settings_page_webfiable-info' === $screen->id ) {
+		return;
+	}
 
 	$email      = webfiable_get_option( 'webfiable_admin_email' );
 	$consent_ts = (int) webfiable_get_option( 'webfiable_consent_ts' );
@@ -539,19 +544,74 @@ function webfiable_render_settings_page() {
 	?>
 	<div class="wrap webfiable-wrap">
 
-		<hr class="wp-header-end" />
-
 		<!-- Page header -->
 		<div class="webfiable-header">
-			<div class="webfiable-logo"><img src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/icon.png' ); ?>" alt="" width="36" height="36" /></div>
-			<h1><?php esc_html_e( 'Webfiable Análisis de Sitios', 'webfiable-info' ); ?></h1>
+			<div class="webfiable-header__brand"><img class="webfiable-header__lockup" src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/webfiable-lockup-light.svg' ); ?>" alt="" width="177" height="28" /></div>
+			<h1><span class="screen-reader-text"><?php esc_html_e( 'Webfiable', 'webfiable-info' ); ?> </span><?php esc_html_e( 'Análisis de Sitios', 'webfiable-info' ); ?></h1>
 			<span class="webfiable-version"><?php echo esc_html( 'v' . WEBFIABLE_INFO_VERSION ); ?></span>
 		</div>
+		<hr class="wp-header-end" />
 
 		<!-- Notice -->
 		<?php if ( ! empty( $notice ) ) : ?>
 			<div class="webfiable-notice webfiable-notice--<?php echo esc_attr( $notice_type ); ?>">
 				<span><?php echo esc_html( $notice ); ?></span>
+			</div>
+		<?php endif; ?>
+
+		<!-- Activity log: only after a failed save, right under the notice, open -->
+		<?php if ( $show_action_log ) : ?>
+			<div class="webfiable-card webfiable-card--log">
+				<div class="webfiable-card__header">
+					<span class="dashicons dashicons-media-text"></span>
+					<h2><?php esc_html_e( 'Registro de actividad reciente', 'webfiable-info' ); ?></h2>
+				</div>
+				<div class="webfiable-card__body">
+					<p class="webfiable-field__help webfiable-log-intro"><?php esc_html_e( 'Estos detalles pueden ayudar a entender qué ha pasado en el último guardado.', 'webfiable-info' ); ?></p>
+					<details class="webfiable-log" open>
+						<summary>
+							<span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span>
+							<?php esc_html_e( 'Mostrar las entradas del registro', 'webfiable-info' ); ?>
+						</summary>
+						<div class="webfiable-log-scroll">
+							<table class="webfiable-log-table">
+								<thead>
+									<tr>
+										<th scope="col"><?php esc_html_e( 'Hora', 'webfiable-info' ); ?></th>
+										<th scope="col"><?php esc_html_e( 'Tipo', 'webfiable-info' ); ?></th>
+										<th scope="col"><?php esc_html_e( 'Acción', 'webfiable-info' ); ?></th>
+										<th scope="col"><?php esc_html_e( 'Detalles', 'webfiable-info' ); ?></th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php foreach ( $action_log as $entry ) : ?>
+										<?php
+										$timestamp    = isset( $entry['timestamp'] ) ? absint( $entry['timestamp'] ) : 0;
+										$time_str     = $timestamp ? wp_date( 'Y-m-d H:i:s', $timestamp ) : '';
+										$level        = isset( $entry['level'] ) ? strtoupper( (string) $entry['level'] ) : '';
+										$action       = isset( $entry['action'] ) ? (string) $entry['action'] : '';
+										$context      = isset( $entry['context'] ) ? $entry['context'] : array();
+										$json_opts    = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES;
+										$context_json = wp_json_encode( $context, $json_opts );
+										?>
+										<tr>
+											<td><code><?php echo esc_html( $time_str ); ?></code></td>
+											<td><span class="webfiable-log-level webfiable-log-level--<?php echo esc_attr( $level ); ?>"><?php echo esc_html( $level ); ?></span></td>
+											<td><?php echo esc_html( $action ); ?></td>
+											<td>
+												<?php if ( ! empty( $context_json ) ) : ?>
+													<pre><?php echo esc_html( $context_json ); ?></pre>
+												<?php else : ?>
+													<span class="webfiable-no-details"><?php esc_html_e( 'Sin más detalles.', 'webfiable-info' ); ?></span>
+												<?php endif; ?>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
+						</div>
+					</details>
+				</div>
 			</div>
 		<?php endif; ?>
 
@@ -658,11 +718,11 @@ function webfiable_render_settings_page() {
 							<div class="webfiable-status-item__label"><?php esc_html_e( 'Conexión de datos', 'webfiable-info' ); ?></div>
 							<div class="webfiable-status-item__value">
 								<?php if ( $enabled ) : ?>
-									<span class="webfiable-pill webfiable-pill--green">
+									<span class="webfiable-pill webfiable-pill--on">
 										<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Activada', 'webfiable-info' ); ?>
 									</span>
 								<?php else : ?>
-									<span class="webfiable-pill webfiable-pill--red">
+									<span class="webfiable-pill webfiable-pill--off">
 										<span class="dashicons dashicons-no"></span> <?php esc_html_e( 'Desactivada', 'webfiable-info' ); ?>
 									</span>
 								<?php endif; ?>
@@ -690,11 +750,11 @@ function webfiable_render_settings_page() {
 							<div class="webfiable-status-item__label"><?php esc_html_e( 'Datos compartidos', 'webfiable-info' ); ?></div>
 							<div class="webfiable-status-item__value">
 								<?php if ( $consented ) : ?>
-									<span class="webfiable-pill webfiable-pill--green">
+									<span class="webfiable-pill webfiable-pill--on">
 										<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Aceptado', 'webfiable-info' ); ?>
 									</span>
 								<?php else : ?>
-									<span class="webfiable-pill webfiable-pill--yellow">
+									<span class="webfiable-pill webfiable-pill--pending">
 										<span class="dashicons dashicons-marker"></span> <?php esc_html_e( 'Pendiente de aceptar', 'webfiable-info' ); ?>
 									</span>
 								<?php endif; ?>
@@ -705,60 +765,6 @@ function webfiable_render_settings_page() {
 				</div>
 			</div>
 		</div>
-
-		<!-- Activity log card (collapsible) -->
-		<?php if ( $show_action_log ) : ?>
-			<div class="webfiable-card">
-				<div class="webfiable-card__header">
-					<span class="dashicons dashicons-media-text"></span>
-					<h2><?php esc_html_e( 'Registro de actividad reciente', 'webfiable-info' ); ?></h2>
-				</div>
-				<div class="webfiable-card__body">
-					<p class="webfiable-field__help" style="margin-top:0"><?php esc_html_e( 'Estos detalles pueden ayudar a entender qué ha pasado en el último guardado.', 'webfiable-info' ); ?></p>
-					<button type="button" class="webfiable-log-toggle" aria-expanded="false" onclick="var c=this.nextElementSibling;var show=c.style.display==='none'||!c.style.display;c.style.display=show?'block':'none';this.setAttribute('aria-expanded',show);">
-						<span class="dashicons dashicons-arrow-down-alt2"></span>
-						<?php esc_html_e( 'Mostrar las entradas del registro', 'webfiable-info' ); ?>
-					</button>
-					<div class="webfiable-log-content" style="display:none">
-						<table class="webfiable-log-table">
-							<thead>
-								<tr>
-									<th scope="col"><?php esc_html_e( 'Hora', 'webfiable-info' ); ?></th>
-									<th scope="col"><?php esc_html_e( 'Tipo', 'webfiable-info' ); ?></th>
-									<th scope="col"><?php esc_html_e( 'Acción', 'webfiable-info' ); ?></th>
-									<th scope="col"><?php esc_html_e( 'Detalles', 'webfiable-info' ); ?></th>
-								</tr>
-							</thead>
-							<tbody>
-								<?php foreach ( $action_log as $entry ) : ?>
-									<?php
-									$timestamp    = isset( $entry['timestamp'] ) ? absint( $entry['timestamp'] ) : 0;
-									$time_str     = $timestamp ? wp_date( 'Y-m-d H:i:s', $timestamp ) : '';
-									$level        = isset( $entry['level'] ) ? strtoupper( (string) $entry['level'] ) : '';
-									$action       = isset( $entry['action'] ) ? (string) $entry['action'] : '';
-									$context      = isset( $entry['context'] ) ? $entry['context'] : array();
-									$json_opts    = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES;
-									$context_json = wp_json_encode( $context, $json_opts );
-									?>
-									<tr>
-										<td><code><?php echo esc_html( $time_str ); ?></code></td>
-										<td><span class="webfiable-log-level webfiable-log-level--<?php echo esc_attr( $level ); ?>"><?php echo esc_html( $level ); ?></span></td>
-										<td><?php echo esc_html( $action ); ?></td>
-										<td>
-											<?php if ( ! empty( $context_json ) ) : ?>
-												<pre><?php echo esc_html( $context_json ); ?></pre>
-											<?php else : ?>
-												<span class="webfiable-no-details"><?php esc_html_e( 'Sin más detalles.', 'webfiable-info' ); ?></span>
-											<?php endif; ?>
-										</td>
-									</tr>
-								<?php endforeach; ?>
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-		<?php endif; ?>
 
 	</div>
 	<?php
