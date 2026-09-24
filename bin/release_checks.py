@@ -58,6 +58,7 @@ REQUIRED = [
     "assets/css/admin.css",
     "assets/css/notice.css",
     "assets/img/icon.png",
+    "assets/img/webfiable-lockup-light.svg",
     "languages/webfiable-info.pot",
     "languages/webfiable-info-en_US.po",
     "languages/webfiable-info-en_US.mo",
