@@ -24,7 +24,11 @@ def compile_mo(po_text):
             continue
         if e["msgid"] and not e["msgstr"]:
             continue
-        catalog[e["msgid"].encode("utf-8")] = e["msgstr"].encode("utf-8")
+        msgstr = e["msgstr"]
+        if not e["msgid"]:
+            # GNU msgfmt leaves POT-Creation-Date out of the compiled header.
+            msgstr = "".join(line for line in msgstr.splitlines(True) if not line.startswith("POT-Creation-Date:"))
+        catalog[e["msgid"].encode("utf-8")] = msgstr.encode("utf-8")
     ids = sorted(catalog)
     n = len(ids)
     orig_table = 7 * 4
