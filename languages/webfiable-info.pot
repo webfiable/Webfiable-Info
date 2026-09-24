@@ -95,6 +95,14 @@ msgid "La conexión de datos ha devuelto una respuesta con un formato inesperado
 msgstr ""
 
 #: includes/admin.php
+msgid "Tu sitio está registrado en Análisis de Sitios de Webfiable. Puedes verlo en tu panel."
+msgstr ""
+
+#: includes/admin.php
+msgid "Para entrar, escribe %s en la página de acceso: te enviaremos a ese correo un enlace de un solo uso, sin contraseña."
+msgstr ""
+
+#: includes/admin.php
 msgid "Análisis de Sitios"
 msgstr ""
 
@@ -128,6 +136,22 @@ msgstr ""
 
 #: includes/admin.php
 msgid "Sin más detalles."
+msgstr ""
+
+#: includes/admin.php
+msgid "Tus informes en Webfiable"
+msgstr ""
+
+#: includes/admin.php
+msgid "Entrar"
+msgstr ""
+
+#: includes/admin.php
+msgid "(se abre en una pestaña nueva)"
+msgstr ""
+
+#: includes/admin.php
+msgid "Escribe tu correo, da tu consentimiento y guarda: registraremos tu sitio y aquí verás cómo entrar en tu panel."
 msgstr ""
 
 #: includes/admin.php

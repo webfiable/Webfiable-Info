@@ -101,6 +101,14 @@ msgid "La conexión de datos ha devuelto una respuesta con un formato inesperado
 msgstr "The data connection returned an unexpected response format. Try saving your permalinks and try again."
 
 #: includes/admin.php
+msgid "Tu sitio está registrado en Análisis de Sitios de Webfiable. Puedes verlo en tu panel."
+msgstr "Your site is registered with Análisis de Sitios de Webfiable. You can see it in your panel."
+
+#: includes/admin.php
+msgid "Para entrar, escribe %s en la página de acceso: te enviaremos a ese correo un enlace de un solo uso, sin contraseña."
+msgstr "To sign in, enter %s on the sign-in page: we will send a single-use link to that address, no password needed."
+
+#: includes/admin.php
 msgid "Análisis de Sitios"
 msgstr "Análisis de Sitios"
 
@@ -135,6 +143,22 @@ msgstr "Details"
 #: includes/admin.php
 msgid "Sin más detalles."
 msgstr "No extra details available."
+
+#: includes/admin.php
+msgid "Tus informes en Webfiable"
+msgstr "Your reports on Webfiable"
+
+#: includes/admin.php
+msgid "Entrar"
+msgstr "Sign in"
+
+#: includes/admin.php
+msgid "(se abre en una pestaña nueva)"
+msgstr "(opens in a new tab)"
+
+#: includes/admin.php
+msgid "Escribe tu correo, da tu consentimiento y guarda: registraremos tu sitio y aquí verás cómo entrar en tu panel."
+msgstr "Enter your email, give your consent and save: we will register your site and show you here how to sign in to your panel."
 
 #: includes/admin.php
 msgid "Correo"

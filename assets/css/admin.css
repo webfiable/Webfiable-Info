@@ -192,6 +192,58 @@
 }
 
 /* ------------------------------------------------------------------ */
+/*  «Tus informes en Webfiable»: the way into the panel                */
+/* ------------------------------------------------------------------ */
+.webfiable-intro {
+	max-width: 66ch;
+	margin: 0 0 20px;
+	font-size: 13px;
+	color: var(--wf-graphite);
+}
+
+/* A long registered email wraps instead of widening the page. */
+.webfiable-card--panel strong {
+	overflow-wrap: anywhere;
+}
+
+/* Lime is a fill, never text: the 1 px ink border carries the shape on white. */
+.webfiable-button--lime {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 40px;
+	padding: 0 16px;
+	box-sizing: border-box;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--wf-ink);
+	background: var(--wf-lime);
+	border: 1px solid var(--wf-ink);
+	border-radius: 4px;
+	text-decoration: none;
+}
+
+.webfiable-button--lime:hover,
+.webfiable-button--lime:focus {
+	color: var(--wf-ink);
+	background: var(--wf-lime);
+	text-decoration: underline;
+}
+
+.webfiable-button--lime:focus {
+	outline: 2px solid var(--wf-ink);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+.webfiable-button--lime .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Form fields inside cards                                          */
 /* ------------------------------------------------------------------ */
 .webfiable-field {
@@ -565,7 +617,8 @@
 		max-width: 100%;
 	}
 
-	.webfiable-log > summary {
+	.webfiable-log > summary,
+	.webfiable-button--lime {
 		min-height: 44px;
 	}
 }

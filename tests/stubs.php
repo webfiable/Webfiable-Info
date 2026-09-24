@@ -68,6 +68,10 @@ function __( $text, $domain = 'default' ) {
 	return $text;
 }
 
+function esc_html__( $text, $domain = 'default' ) {
+	return esc_html( $text );
+}
+
 function esc_html( $text ) {
 	return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
 }

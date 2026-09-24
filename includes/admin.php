@@ -512,6 +512,32 @@ function webfiable_enqueue_admin_assets( $hook_suffix ) {
 add_action( 'admin_enqueue_scripts', 'webfiable_enqueue_admin_assets' );
 
 /**
+ * The paragraphs of the panel card (the way into the panel), escaped, in order.
+ *
+ * Empty when the card is not shown. The line that says the site is registered
+ * appears only with the registration stamp.
+ *
+ * @return string[] HTML paragraphs (only <strong> markup).
+ */
+function webfiable_panel_card_paragraphs() {
+	if ( ! webfiable_panel_card_visible() ) {
+		return array();
+	}
+
+	$paragraphs = array();
+	if ( webfiable_is_registered() ) {
+		$paragraphs[] = esc_html__( 'Tu sitio está registrado en Análisis de Sitios de Webfiable. Puedes verlo en tu panel.', 'webfiable-info' );
+	}
+	$paragraphs[] = sprintf(
+		/* translators: %s: the registered email address, in bold. */
+		esc_html__( 'Para entrar, escribe %s en la página de acceso: te enviaremos a ese correo un enlace de un solo uso, sin contraseña.', 'webfiable-info' ),
+		'<strong>' . esc_html( (string) webfiable_get_option( 'webfiable_admin_email' ) ) . '</strong>'
+	);
+
+	return $paragraphs;
+}
+
+/**
  * Settings page (render + save).
  */
 function webfiable_render_settings_page() {
@@ -613,6 +639,30 @@ function webfiable_render_settings_page() {
 					</details>
 				</div>
 			</div>
+		<?php endif; ?>
+
+		<!-- Panel card: consent, a valid email and the connection are on -->
+		<?php $panel_paragraphs = webfiable_panel_card_paragraphs(); ?>
+		<?php if ( ! empty( $panel_paragraphs ) ) : ?>
+			<section class="webfiable-card webfiable-card--panel" aria-labelledby="webfiable-panel-title">
+				<div class="webfiable-card__header">
+					<h2 id="webfiable-panel-title"><?php esc_html_e( 'Tus informes en Webfiable', 'webfiable-info' ); ?></h2>
+				</div>
+				<div class="webfiable-card__body">
+					<?php foreach ( $panel_paragraphs as $panel_paragraph ) : ?>
+						<p><?php echo wp_kses( $panel_paragraph, array( 'strong' => array() ) ); ?></p>
+					<?php endforeach; ?>
+					<p>
+						<a class="webfiable-button webfiable-button--lime" href="<?php echo esc_url( 'https://siteaudit.webfiable.com/acceso' ); ?>" target="_blank" rel="noopener">
+							<?php esc_html_e( 'Entrar', 'webfiable-info' ); ?>
+							<span class="dashicons dashicons-external" aria-hidden="true"></span>
+							<span class="screen-reader-text"><?php esc_html_e( '(se abre en una pestaña nueva)', 'webfiable-info' ); ?></span>
+						</a>
+					</p>
+				</div>
+			</section>
+		<?php else : ?>
+			<p class="webfiable-intro"><?php esc_html_e( 'Escribe tu correo, da tu consentimiento y guarda: registraremos tu sitio y aquí verás cómo entrar en tu panel.', 'webfiable-info' ); ?></p>
 		<?php endif; ?>
 
 		<!-- Settings card -->

@@ -125,6 +125,8 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 
 	if ( $success ) {
 		$result['success'] = true;
+		// «Registered» is a stored fact: the settings page says it only with this stamp.
+		webfiable_update_option( 'webfiable_registered_ts', time() );
 		webfiable_log_action(
 			'registration_success',
 			array(
