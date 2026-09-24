@@ -55,6 +55,7 @@ REQUIRED = [
     "includes/options.php",
     "includes/registration.php",
     "includes/routing.php",
+    "includes/update.php",
     "assets/css/admin.css",
     "assets/css/notice.css",
     "assets/img/icon.png",

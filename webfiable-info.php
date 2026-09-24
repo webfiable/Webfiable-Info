@@ -35,6 +35,7 @@ require_once WEBFIABLE_PLUGIN_DIR . 'includes/admin.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/routing.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/endpoint.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/registration.php';
+require_once WEBFIABLE_PLUGIN_DIR . 'includes/update.php';
 
 /** Register activation/deactivation hooks provided by routing.php */
 register_activation_hook( __FILE__, 'webfiable_activate' );

@@ -21,6 +21,7 @@ function webfiable_default_options() {
 		'webfiable_endpoint_enabled' => 'yes',
 		'webfiable_action_log'       => array(),
 		'webfiable_registered_ts'    => 0,
+		'webfiable_plugin_version'   => '',
 	);
 }
 

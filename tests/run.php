@@ -15,6 +15,11 @@ require WEBFIABLE_PLUGIN_DIR . 'includes/options.php';
 require WEBFIABLE_PLUGIN_DIR . 'includes/logger.php';
 require WEBFIABLE_PLUGIN_DIR . 'includes/admin.php';
 require WEBFIABLE_PLUGIN_DIR . 'includes/registration.php';
+require WEBFIABLE_PLUGIN_DIR . 'includes/routing.php';
+require WEBFIABLE_PLUGIN_DIR . 'includes/update.php';
+
+// The hooks the files registered while loading (the cases below reset the recorder).
+$GLOBALS['wf_test_load_calls'] = $GLOBALS['wf_test_calls'];
 
 $GLOBALS['wf_test_count']    = 0;
 $GLOBALS['wf_test_failures'] = array();
@@ -179,6 +184,172 @@ $GLOBALS['wf_test_http_response'] = new WP_Error( 'http_request_failed', 'cURL e
 $wf_before = wf_test_options_without_log();
 $wf_result = webfiable_register_current_site( 'settings' );
 assert_same( array( false, $wf_before ), array( $wf_result['success'], wf_test_options_without_log() ), 'registration HTTP error: failure, no option written (no stamp)' );
+
+// ------------------------------------------------------------ registration after an update (T5-2)
+// A version change is caught on plugins_loaded with the new code loaded; the
+// stamp is written first; one background event makes the same call as a save.
+
+assert_same(
+	array( 'schedule', 'schedule', 'stamp', 'none', 'none' ),
+	array(
+		webfiable_update_registration_decision( '', '2.2.0', true ),
+		webfiable_update_registration_decision( '2.1.2', '2.2.0', true ),
+		webfiable_update_registration_decision( '', '2.2.0', false ),
+		webfiable_update_registration_decision( '2.2.0', '2.2.0', true ),
+		webfiable_update_registration_decision( '2.2.0', '2.2.0', false ),
+	),
+	'decision: a different stamp schedules when the site is set up, stamps only when not, and the same stamp does nothing'
+);
+
+wf_test_saved_site();
+assert_same( array( 'ok' => true, 'reason' => '' ), webfiable_registration_preconditions(), 'preconditions: a set-up site is ok' );
+wf_test_saved_site();
+delete_option( 'webfiable_endpoint_enabled' );
+assert_same( array( 'ok' => true, 'reason' => '' ), webfiable_registration_preconditions(), 'preconditions: no stored connection option means the plugin default (on)' );
+wf_test_saved_site();
+update_option( 'webfiable_site_id', '' );
+assert_same( 'no_site_id', webfiable_registration_preconditions()['reason'], 'preconditions: empty site id → no_site_id (the update path never invents one)' );
+wf_test_saved_site();
+update_option( 'webfiable_admin_email', 'no-es-un-correo' );
+assert_same( 'no_email', webfiable_registration_preconditions()['reason'], 'preconditions: invalid email → no_email' );
+wf_test_saved_site();
+delete_option( 'webfiable_admin_email' );
+assert_same( 'no_email', webfiable_registration_preconditions()['reason'], 'preconditions: missing email → no_email' );
+wf_test_saved_site();
+update_option( 'webfiable_consent_ts', 0 );
+assert_same( 'no_consent', webfiable_registration_preconditions()['reason'], 'preconditions: consent 0 → no_consent' );
+wf_test_saved_site();
+update_option( 'webfiable_endpoint_enabled', 'no' );
+assert_same( 'no_consent', ( function () {
+	update_option( 'webfiable_consent_ts', 0 );
+	return webfiable_registration_preconditions()['reason'];
+} )(), 'preconditions: checked in order (consent before the connection)' );
+wf_test_saved_site();
+update_option( 'webfiable_endpoint_enabled', 'no' );
+assert_same( 'endpoint_disabled', webfiable_registration_preconditions()['reason'], 'preconditions: connection off → endpoint_disabled' );
+
+/**
+ * One stamp check, as plugins_loaded runs it, with the stored stamp given.
+ */
+function wf_test_stamp_check( $stored ) {
+	if ( null !== $stored ) {
+		$GLOBALS['wf_test_options']['webfiable_plugin_version'] = $stored;
+	}
+	$GLOBALS['wf_test_calls'] = array();
+	webfiable_check_version_stamp();
+}
+
+// Update 2.1.2 → 2.2.0 on a set-up site (no stamp: 2.1.2 had none).
+wf_test_saved_site();
+wf_test_stamp_check( null );
+$wf_scheduled = wf_test_calls_of( 'wp_schedule_single_event' );
+assert_same( 1, count( $wf_scheduled ), 'stamp differs, site set up: exactly one event scheduled' );
+assert_same( WEBFIABLE_UPDATE_REGISTRATION_HOOK, isset( $wf_scheduled[0] ) ? $wf_scheduled[0][1] : null, 'the event is the registration-after-update hook' );
+assert_same( array( array( 'webfiable_plugin_version', WEBFIABLE_INFO_VERSION, true ) ), array_values( array_filter( wf_test_calls_of( 'update_option' ), function ( $c ) {
+	return 'webfiable_plugin_version' === $c[0];
+} ) ), 'the new stamp is written once, autoloaded' );
+assert_same( array( 'from' => '', 'to' => WEBFIABLE_INFO_VERSION, 'cron_disabled' => false ), wf_test_last_log( 'update_registration_scheduled' ), 'the scheduled entry says from, to and cron_disabled false (DISABLE_WP_CRON not set)' );
+assert_same( array( array(), array() ), array( wf_test_calls_of( 'wp_remote_post' ), wf_test_calls_of( '__' ) ), 'the stamp check makes no registration call and runs no translation function' );
+
+// The next request: same stamp, nothing at all.
+wf_test_stamp_check( null );
+assert_same( array(), $GLOBALS['wf_test_calls'], 'same stamp: fast path, no write, no event, no log' );
+
+// Two requests that both read the old stamp before either wrote it.
+wf_test_stamp_check( '' );
+assert_same( array(), wf_test_calls_of( 'wp_schedule_single_event' ), 'two concurrent detections: the second finds the queued event and schedules none (one event in total)' );
+assert_same( 1, count( $GLOBALS['wf_test_cron'] ), 'two concurrent detections: one event queued' );
+
+// A fresh install (no consent yet): stamp only.
+wf_test_saved_site();
+update_option( 'webfiable_consent_ts', 0 );
+wf_test_stamp_check( null );
+assert_same(
+	array( 0, WEBFIABLE_INFO_VERSION, 'no_consent' ),
+	array( count( wf_test_calls_of( 'wp_schedule_single_event' ) ), get_option( 'webfiable_plugin_version' ), wf_test_last_log( 'update_registration_skipped' )['reason'] ),
+	'no consent: no event, the stamp is still written, the skip is logged with its reason'
+);
+wf_test_stamp_check( null );
+assert_same( array(), $GLOBALS['wf_test_calls'], 'no consent: the next request is the fast path' );
+
+foreach ( array( 'webfiable_admin_email' => '', 'webfiable_site_id' => '', 'webfiable_endpoint_enabled' => 'no' ) as $wf_key => $wf_value ) {
+	wf_test_saved_site();
+	update_option( $wf_key, $wf_value );
+	wf_test_stamp_check( null );
+	assert_same( 0, count( wf_test_calls_of( 'wp_schedule_single_event' ) ), 'precondition missing (' . $wf_key . '): no event' );
+}
+
+$wf_load = array();
+foreach ( $GLOBALS['wf_test_load_calls'] as $wf_call ) {
+	if ( 'add_action' === $wf_call[0] ) {
+		$wf_load[] = $wf_call[1];
+	}
+}
+assert_same(
+	array( true, true ),
+	array(
+		in_array( array( 'plugins_loaded', 'webfiable_check_version_stamp' ), $wf_load, true ),
+		in_array( array( WEBFIABLE_UPDATE_REGISTRATION_HOOK, 'webfiable_run_update_registration' ), $wf_load, true ),
+	),
+	'hooks: the stamp check on plugins_loaded, the registration on the event'
+);
+
+// The event: the same request as the settings save (ENG-3 identity).
+wf_test_saved_site();
+wf_test_http_answer( 200, 'true' );
+webfiable_register_current_site( 'settings' );
+$wf_settings_identity = wf_test_request_identity( $GLOBALS['wf_test_http'][0] );
+wf_test_saved_site();
+wf_test_http_answer( 200, 'true' );
+webfiable_run_update_registration();
+assert_same( 1, count( $GLOBALS['wf_test_http'] ), 'event: exactly one registration request' );
+assert_same( $wf_settings_identity, isset( $GLOBALS['wf_test_http'][0] ) ? wf_test_request_identity( $GLOBALS['wf_test_http'][0] ) : null, 'event: method, URL, sha256 of the raw body, sorted keys, timeout and content type equal the settings save\'s' );
+assert_same( array( 'siteId', 'siteUrl', 'adminEmail' ), array_keys( json_decode( $GLOBALS['wf_test_http'][0][2]['body'], true ) ), 'event: the body carries exactly the three fields, nothing more' );
+assert_same( array( true, 200, 'update' ), array( (int) get_option( 'webfiable_registered_ts', 0 ) > 0, wf_test_last_log( 'update_registration_succeeded' )['http_code'], wf_test_last_log( 'registration_attempt_started' )['trigger'] ), 'event success: stamp written, success logged, trigger update' );
+
+// The event after consent was withdrawn: no call.
+wf_test_saved_site();
+update_option( 'webfiable_consent_ts', 0 );
+wf_test_http_answer( 200, 'true' );
+webfiable_run_update_registration();
+assert_same( array( 0, 'no_consent' ), array( count( $GLOBALS['wf_test_http'] ), wf_test_last_log( 'update_registration_skipped_at_run' )['reason'] ), 'event: preconditions re-checked at run; consent withdrawn → no call, logged' );
+
+// The event fails: the site stays as it was.
+foreach ( array( 'timeout' => new WP_Error( 'http_request_failed', 'cURL error 28: Operation timed out' ), 'not true' => array( 'response' => array( 'code' => 401 ), 'body' => '{"error":"unauthorized"}', 'headers' => array() ) ) as $wf_case => $wf_response ) {
+	wf_test_saved_site();
+	$GLOBALS['wf_test_http_response'] = $wf_response;
+	$wf_before                        = wf_test_options_without_log();
+	$GLOBALS['wf_test_calls']         = array();
+	webfiable_run_update_registration();
+	assert_same( $wf_before, wf_test_options_without_log(), 'event failure (' . $wf_case . '): every option but the log unchanged (connection still on, no stamp)' );
+	assert_same( array( 0, true ), array( count( wf_test_calls_of( 'wp_schedule_single_event' ) ), is_array( wf_test_last_log( 'update_registration_failed' ) ) ), 'event failure (' . $wf_case . '): logged, no retry scheduled' );
+}
+$wf_failed = null;
+foreach ( webfiable_get_action_log( 'request' ) as $wf_entry ) {
+	if ( 'update_registration_failed' === $wf_entry['action'] ) {
+		$wf_failed = $wf_entry;
+	}
+}
+assert_same( array( 'error', 401 ), array( $wf_failed['level'], $wf_failed['context']['http_code'] ), 'event failure: logged at error level with the HTTP code' );
+
+// Deactivation drops a pending event.
+wf_test_saved_site();
+wf_test_stamp_check( null );
+webfiable_deactivate();
+assert_same( array( array( array( WEBFIABLE_UPDATE_REGISTRATION_HOOK ) ), array() ), array( wf_test_calls_of( 'wp_clear_scheduled_hook' ), $GLOBALS['wf_test_cron'] ), 'deactivation clears the registration-after-update event' );
+
+assert_same( '', webfiable_default_options()['webfiable_plugin_version'], 'the stamp option defaults to empty' );
+
+// ------------------------------------------------------------ constants (last: a constant cannot be undefined)
+define( 'DISABLE_WP_CRON', true );
+wf_test_saved_site();
+wf_test_stamp_check( null );
+assert_same( true, wf_test_last_log( 'update_registration_scheduled' )['cron_disabled'], 'DISABLE_WP_CRON set: the scheduled entry says cron_disabled true (ENG-6)' );
+
+define( 'WEBFIABLE_INFO_ACTIVATE_ENDPOINT', true );
+wf_test_saved_site();
+update_option( 'webfiable_endpoint_enabled', 'no' );
+assert_same( array( 'ok' => true, 'reason' => '' ), webfiable_registration_preconditions(), 'preconditions: connection forced on by wp-config counts as on, whatever the option says' );
 
 // ------------------------------------------------------------ result
 $failures = $GLOBALS['wf_test_failures'];

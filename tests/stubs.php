@@ -23,6 +23,7 @@ function wf_test_reset() {
 	$GLOBALS['wf_test_calls']         = array();
 	$GLOBALS['wf_test_http']          = array();
 	$GLOBALS['wf_test_http_response'] = null;
+	$GLOBALS['wf_test_cron']          = array();
 }
 
 function wf_test_record( $name, $args ) {
@@ -67,6 +68,7 @@ function untrailingslashit( $value ) {
 }
 
 function __( $text, $domain = 'default' ) {
+	wf_test_record( '__', array( $text ) );
 	return $text;
 }
 
@@ -161,4 +163,40 @@ function apply_filters( $hook, $value ) {
 
 function maybe_serialize( $data ) {
 	return is_array( $data ) || is_object( $data ) ? serialize( $data ) : $data;
+}
+
+// ------------------------------------------------------------ WP-Cron and rewrite rules
+// An in-memory event list keyed by hook: wp_next_scheduled sees what
+// wp_schedule_single_event queued, as WordPress's own cron option does.
+$GLOBALS['wf_test_cron'] = array();
+
+function wp_schedule_single_event( $timestamp, $hook, $args = array(), $wp_error = false ) {
+	$GLOBALS['wf_test_cron'][ $hook ] = $timestamp;
+	wf_test_record( 'wp_schedule_single_event', array( $timestamp, $hook ) );
+	return true;
+}
+
+function wp_next_scheduled( $hook, $args = array() ) {
+	return isset( $GLOBALS['wf_test_cron'][ $hook ] ) ? $GLOBALS['wf_test_cron'][ $hook ] : false;
+}
+
+function wp_clear_scheduled_hook( $hook, $args = array(), $wp_error = false ) {
+	unset( $GLOBALS['wf_test_cron'][ $hook ] );
+	wf_test_record( 'wp_clear_scheduled_hook', array( $hook ) );
+	return 0;
+}
+
+function flush_rewrite_rules( $hard = true ) {
+	wf_test_record( 'flush_rewrite_rules', array( $hard ) );
+}
+
+/** The recorded calls of one function, in order. */
+function wf_test_calls_of( $name ) {
+	$calls = array();
+	foreach ( $GLOBALS['wf_test_calls'] as $call ) {
+		if ( $name === $call[0] ) {
+			$calls[] = $call[1];
+		}
+	}
+	return $calls;
 }
