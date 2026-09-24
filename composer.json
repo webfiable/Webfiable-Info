@@ -1,6 +1,6 @@
 {
   "name": "fjcf76/webfiable-info",
-  "description": "Webfiable is a monitoring plugin that provides insights into your site's health and security posture. Requires a free Webfiable subscription.",
+  "description": "Webfiable Análisis de Sitios: connects WordPress to the Análisis de Sitios de Webfiable panel.",
   "type": "wordpress-plugin",
   "license": "GPL-3.0-or-later",
   "require-dev": {

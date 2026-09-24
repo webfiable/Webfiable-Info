@@ -1,88 +1,64 @@
-<p align="center">
-  <img src="https://webfiable.com/wp-content/uploads/2025/01/icon2.png" alt="Webfiable" width="60">
-</p>
-<h1 align="center">Webfiable Info</h1>
+# Webfiable Análisis de Sitios
 
-<p align="center">
-  <strong>El plugin que conecta tu WordPress con el servicio de seguridad de <a href="https://webfiable.com">Webfiable</a></strong>
+<p>
+  <img src="assets/img/webfiable-lockup-light.svg" alt="Webfiable" width="177" height="28">
 </p>
 
-<p align="center">
-  <a href="https://webfiable.com">Web</a> ·
-  <a href="https://app.webfiable.com">Evaluación rápida</a> ·
-  <a href="https://wordpress.org/plugins/webfiable-info/">Plugin en WordPress.org</a>
-</p>
+Connects your WordPress site to Webfiable's site analysis service, which reviews its security and configuration and shows the results in your panel.
 
-<p align="center">
-  <img src="https://img.shields.io/wordpress/plugin/v/webfiable-info?label=versi%C3%B3n&color=blue" alt="Versión">
-  <img src="https://img.shields.io/wordpress/plugin/tested/webfiable-info?label=probado%20hasta%20WP&color=green" alt="Probado hasta WordPress">
-  <img src="https://img.shields.io/badge/licencia-GPL%20v3-blue" alt="Licencia">
-</p>
+[Análisis de Sitios](https://siteaudit.webfiable.com) · [Plugin on WordPress.org](https://wordpress.org/plugins/webfiable-info/) · [Webfiable](https://webfiable.com)
 
----
+![Version](https://img.shields.io/wordpress/plugin/v/webfiable-info?label=version) ![Tested up to](https://img.shields.io/wordpress/plugin/tested/webfiable-info?label=tested%20up%20to)
 
-## Qué es Webfiable Info
+## What it is
 
-Webfiable Info es un plugin ligero y respetuoso con la privacidad que registra tu sitio en [Webfiable](https://webfiable.com) y expone un inventario mínimo de software, versión de WordPress, plugins y temas instalados, y metadatos básicos, a través de un endpoint cifrado. A cambio, recibes por correo un informe completo y resúmenes periódicos con recomendaciones accionables de seguridad.
+**Webfiable Análisis de Sitios** connects your WordPress site to [Análisis de Sitios de Webfiable](https://siteaudit.webfiable.com), the Webfiable service that reviews the security and configuration of websites.
 
-El proyecto está en fase beta pública. No hay costo, ni suscripción, ni registro externo: todo se gestiona desde el panel de ajustes del plugin. Si en el futuro se requiere suscripción, se avisará con antelación.
+Without the plugin, Webfiable only sees what your site shows from the outside. With the plugin, and with your consent, it can read the full list of installed plugins and themes with their versions, and the exact WordPress and PHP versions. It analyses your site with that data and shows you the results in your panel.
 
-## Características
+You sign in to your panel at <https://siteaudit.webfiable.com/acceso> with the email you entered in the plugin settings: you receive a single-use sign-in link, with no password. If the plugin was already set up before an update, your site registers again once after the update, in the background.
 
-- **Registro en un clic:** introduce un email para los informes, da tu consentimiento y activa el endpoint. El plugin lo verifica y completa el registro automáticamente.
-- **Endpoint opt-in:** el endpoint público `/webfiable` viene desactivado por defecto. Si la verificación o el registro fallan, se desactiva de forma segura.
-- **Consentimiento reversible:** desactivar el consentimiento guarda tu preferencia y apaga el endpoint al instante. Puedes reactivarlo cuando quieras.
-- **Ligero por diseño:** sin procesos pesados en segundo plano. El endpoint responde bajo demanda en milisegundos.
-- **Seguro por defecto:** cifrado híbrido AES-256-CBC + RSA-2048 protege cada transmisión.
-- **Parte del ecosistema Webfiable:** más información en [webfiable.com](https://webfiable.com).
+The plugin sends no email and no reports by email.
 
-## Seguridad
+## What data it shares
 
-Webfiable Info está diseñado para que no tengas que confiar a ciegas:
+Only if you give your consent and the data connection is on:
 
-- **Cifrado híbrido:** el inventario se cifra con AES-256-CBC; la clave AES se protege con RSA-2048. Solo Webfiable puede descifrar el contenido.
-- **IV único por respuesta:** cada respuesta genera un nuevo vector de inicialización, garantizando que el cifrado sea siempre distinto.
-- **Endpoint público, contenido privado:** el endpoint `/webfiable` es accesible, pero el payload solo lo descifra Webfiable.
-- **Limitación por IP:** protección básica contra abuso mediante rate limiting.
+- the site address and an identifier the plugin creates when it is activated;
+- the versions of WordPress, of PHP and of the plugin itself;
+- the installed plugins and themes: name, identifier, version and short description;
+- the email you enter in the settings and the date you gave your consent.
 
-## Instalación y configuración
+It does not read your content, your users, passwords or any other credential.
 
-1. Instala el plugin (subida de ZIP o desde código fuente).
-2. Actívalo en WordPress.
-3. Ve a **Ajustes → Webfiable Info**.
-4. Introduce el correo del destinatario del informe y marca la casilla de consentimiento.
-5. Activa el endpoint `/webfiable` y haz clic en **Guardar ajustes**.
-6. El plugin verifica el endpoint y completa el registro. Si la verificación falla, un aviso te indica qué corregir y el endpoint se desactiva de forma segura.
+## How it protects that data
 
-## Preguntas frecuentes
+- The list is served encrypted at your site's `/webfiable` address: AES-256-CBC for the data and RSA-2048 for the key, with a new initialisation vector for every response. Anyone can request that address, but only Webfiable holds the private key that reads the answer. The encryption keeps the content confidential; it does not sign it, and it does not limit who can ask.
+- That address answers only after you give your consent and while the data connection is on, and it serves at most 25 requests per minute to the same IP address.
+- If you withdraw your consent, the address stops serving the list at once and the data connection is switched off.
+- The registration call itself (site identifier, site address and email) is sent as JSON over HTTPS to `https://webfiable.com/wp-json/webfiable/v1/activations`.
 
-### ¿Necesito una suscripción a Webfiable?
-No durante la beta pública. El plugin registra tu sitio automáticamente y el servicio es gratuito. Si se introduce una suscripción en el futuro, recibirás aviso previo y una ruta clara de actualización. Consulta novedades en [webfiable.com](https://webfiable.com).
+Privacy policy: <https://webfiable.com/privacidad/> · Legal notice: <https://webfiable.com/aviso-legal/>
 
-### ¿Cómo se protege mi información?
-Los datos se cifran en tu sitio antes de cualquier transmisión con AES-256-CBC. La clave AES se cifra con RSA-2048, de modo que solo Webfiable puede leer el contenido.
+## Installation and setup
 
-### ¿Qué información se recopila?
-Solo un inventario mínimo: URL del sitio, versión de WordPress, plugins y temas instalados (nombre, slug, versión, descripción breve), un identificador del sitio, marca de tiempo de consentimiento y el correo que proporcionas para los informes. Sin contenido de usuarios ni credenciales.
+1. In your WordPress dashboard, go to **Plugins → Add New Plugin** and search for "Webfiable Análisis de Sitios".
+2. Click **Install Now** and then **Activate**.
+3. Go to **Settings → Webfiable**.
+4. Enter your email, tick the consent box and leave the data connection on.
+5. Click **Save Settings**. The plugin checks the connection and registers your site. If something fails, a notice tells you what to check and the data connection is switched off.
 
-### ¿Qué pasa si desactivo el consentimiento?
-Tu preferencia se guarda de inmediato y el endpoint `/webfiable` se apaga. Puedes reactivar el consentimiento y el endpoint en cualquier momento desde Ajustes.
+The settings screen is written in Spanish and includes an English translation, which WordPress uses when your dashboard language is not Spanish.
 
-### ¿Por qué podría fallar el registro?
-El plugin verifica el endpoint antes de registrar. Si tu servidor bloquea peticiones loopback, los enlaces permanentes están mal configurados o falta la extensión PHP OpenSSL, la verificación puede fallar. Corrige el problema y pulsa **Guardar ajustes** de nuevo, el plugin reintentará.
+## Frequently asked questions
 
-## Contribuir
+The questions and answers are the same as in the plugin's listing on WordPress.org (`readme.txt`, «Frequently Asked Questions»): how to sign in to the panel, why the name changed, what happens after an update and on sites without WP-Cron, what happens when consent is withdrawn, why registration can fail, and what stays after uninstalling.
 
-Issues y PRs son bienvenidos. Mantén los cambios enfocados y coherentes con el estilo de código existente.
+## Development
 
-## Licencia
+- Every pull request runs `.github/workflows/ci.yml`: version coherence across the plugin header, `includes/constants.php` and `readme.txt`; a self-test of the release checks; the English translation against the Spanish source strings; the PHP unit tests on PHP 8.3 and 7.4; phpcs; a PHP 7.4 parse of every shipped file; and the package a release would publish, built in dry-run mode, inspected file by file and run through Plugin Check.
+- A release is a `v*.*.*` tag. `.github/workflows/release.yml` refuses a tag whose version differs from the code, repeats the checks on the package and only then deploys it to WordPress.org.
 
-GPL v3 o posterior. Consulta la [licencia completa](https://www.gnu.org/licenses/gpl-3.0.html).
+## License
 
-## Changelog
-
-Consulta el [changelog completo en WordPress.org](https://wordpress.org/plugins/webfiable-info/#developers).
-
----
-
-<p align="center"><sub>Proyecto personal en fase beta · No comercial · Hecho con curiosidad y café ☕</sub></p>
+GPL v3 or later. See the [full license](https://www.gnu.org/licenses/gpl-3.0.html).
