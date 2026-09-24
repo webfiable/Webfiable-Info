@@ -1,0 +1,128 @@
+name: CI
+
+# Every pull request and every push to main: version coherence, the release
+# checks' self-test, phpcs, a PHP 7.4 parse of the shipped files, and the zip a
+# release would publish, built by the deploy action in dry-run mode, inspected
+# and run through Plugin Check. No secret is used anywhere in this workflow.
+# Every action is pinned to a full commit SHA; the comment names its tag.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Version coherence and Tested up to
+        run: python3 bin/release_checks.py coherence
+
+      - name: Release-check self-test (proves each check can fail)
+        run: python3 bin/release_checks.py selftest
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          tools: 'composer:v2'
+          coverage: none
+
+      - name: composer install
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: phpcs
+        run: vendor/bin/phpcs --standard=phpcs.xml -s --report=full
+
+      - name: phpcs scanned every shipped PHP file
+        run: |
+          set +e
+          vendor/bin/phpcs --standard=phpcs.xml --report=json > "$RUNNER_TEMP/phpcs.json"
+          set -e
+          scanned=$(python3 -c 'import json,sys; print(sum(1 for f in json.load(open(sys.argv[1]))["files"] if f.endswith(".php")))' "$RUNNER_TEMP/phpcs.json")
+          shipped=$(python3 bin/release_checks.py php74 --list | wc -l)
+          echo "phpcs scanned ${scanned} PHP files; the package ships ${shipped}"
+          test "${scanned}" -eq "${shipped}"
+          test "${shipped}" -ge 1
+
+  php74:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - name: PHP 7.4 parses every shipped PHP file
+        run: |
+          php -v | head -n 1
+          python3 bin/release_checks.py php74 --list | xargs -n 1 php -l
+
+      - name: The PHP 7.4 lint can fail (a PHP 8.0 match expression must not parse)
+        run: |
+          printf '<?php echo match (1) { 1 => "a" };\n' > "$RUNNER_TEMP/m.php"
+          if php -l "$RUNNER_TEMP/m.php"; then
+            echo "php -l accepted PHP 8.0 syntax: this job would not catch it"
+            exit 1
+          fi
+          echo "php -l refused the PHP 8.0 fixture, as it must"
+
+      - name: No PHP 8.0-only function or syntax in shipped files
+        run: python3 bin/release_checks.py php74
+
+  package:
+    runs-on: ubuntu-24.04
+    needs: checks
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: dry
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        with:
+          dry-run: true
+          generate-zip: true
+        env:
+          SLUG: webfiable-info
+          # Never an SVN tag: a version that already exists on SVN would make the
+          # action zip the published trunk instead of this branch.
+          VERSION: ci-${{ github.run_id }}
+          # Required non-empty by the action, never used in dry-run.
+          SVN_USERNAME: dry-run
+          SVN_PASSWORD: dry-run
+
+      - name: Inspect the zip
+        env:
+          ZIP: ${{ steps.dry.outputs.zip-path }}
+        run: python3 bin/release_checks.py zip "$ZIP"
+
+      - name: Unpack for Plugin Check
+        env:
+          ZIP: ${{ steps.dry.outputs.zip-path }}
+        run: mkdir -p dist && unzip -q "$ZIP" -d dist
+
+      - uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: ./dist/webfiable-info
+          slug: webfiable-info
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: webfiable-info-zip
+          path: ${{ steps.dry.outputs.zip-path }}
+          retention-days: 30
