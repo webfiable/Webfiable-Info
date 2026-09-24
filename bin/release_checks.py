@@ -58,8 +58,8 @@ REQUIRED = [
     "assets/css/notice.css",
     "assets/img/icon.png",
     "languages/webfiable-info.pot",
-    "languages/webfiable-info-es_ES.po",
-    "languages/webfiable-info-es_ES.mo",
+    "languages/webfiable-info-en_US.po",
+    "languages/webfiable-info-en_US.mo",
 ]
 
 # Development files that must never reach the package (matched per path segment).

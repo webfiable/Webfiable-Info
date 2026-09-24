@@ -32,6 +32,11 @@ jobs:
       - name: Release-check self-test (proves each check can fail)
         run: python3 bin/release_checks.py selftest
 
+      - name: Translations (the English file covers every Spanish source string)
+        run: |
+          command -v msgfmt || { sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext; }
+          python3 bin/release_checks.py i18n
+
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '7.4'

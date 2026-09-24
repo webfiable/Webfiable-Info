@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function webfiable_plugin_action_links( $links ) {
 	$url   = admin_url( 'options-general.php?page=webfiable-info' );
-	$label = esc_html__( 'Settings', 'webfiable-info' );
+	$label = esc_html__( 'Ajustes', 'webfiable-info' );
 	array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . $label . '</a>' );
 	return $links;
 }
@@ -33,8 +33,8 @@ function webfiable_plugin_row_meta( $links, $file ) {
 	if ( WEBFIABLE_PLUGIN_BASENAME !== $file ) {
 		return $links;
 	}
-	$links[] = '<a href="' . esc_url( 'https://webfiable.com/politica-privacidad/' ) . '" target="_blank" rel="noopener">' .
-		esc_html__( 'Privacy', 'webfiable-info' ) . '</a>';
+	$links[] = '<a href="' . esc_url( 'https://webfiable.com/privacidad/' ) . '" target="_blank" rel="noopener">' .
+		esc_html__( 'Privacidad', 'webfiable-info' ) . '</a>';
 	return $links;
 }
 add_filter( 'plugin_row_meta', 'webfiable_plugin_row_meta', 10, 2 );
@@ -53,7 +53,7 @@ function webfiable_admin_notice_openssl() {
 		return;
 	}
 	echo '<div class="notice notice-error is-dismissible"><p>';
-	esc_html_e( 'Webfiable Info needs the OpenSSL extension to work. Please ask your hosting provider to enable it or check your server\'s PHP configuration.', 'webfiable-info' );
+	esc_html_e( 'Webfiable Análisis de Sitios necesita la extensión OpenSSL de PHP para funcionar. Pide a tu proveedor de alojamiento que la active.', 'webfiable-info' );
 	echo '</p></div>';
 }
 add_action( 'admin_notices', 'webfiable_admin_notice_openssl' );
@@ -74,13 +74,13 @@ function webfiable_admin_notice_incomplete_setup() {
 
 	$issues = array();
 	if ( empty( $email ) || ! is_email( $email ) ) {
-		$issues[] = __( 'Enter a valid email address to receive reports.', 'webfiable-info' );
+		$issues[] = __( 'Escribe un correo válido: es el que usarás para entrar en tu panel.', 'webfiable-info' );
 	}
 	if ( $consent_ts <= 0 ) {
-		$issues[] = __( 'Agree to share your site details with Webfiable so we can generate reports.', 'webfiable-info' );
+		$issues[] = __( 'Acepta compartir los datos de tu sitio con Webfiable.', 'webfiable-info' );
 	}
 	if ( ! $enabled ) {
-		$issues[] = __( 'Turn on the data connection so Webfiable can read your site info.', 'webfiable-info' );
+		$issues[] = __( 'Activa la conexión de datos para que Webfiable pueda leer la información de tu sitio.', 'webfiable-info' );
 	}
 	if ( empty( $issues ) ) {
 		return; }
@@ -92,8 +92,8 @@ function webfiable_admin_notice_incomplete_setup() {
 			<img src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/icon.png' ); ?>" alt="" width="40" height="40" />
 		</div>
 		<div class="webfiable-setup-banner__body">
-			<p class="webfiable-setup-banner__title"><?php esc_html_e( 'Welcome to Webfiable — you\'re almost there!', 'webfiable-info' ); ?></p>
-			<p class="webfiable-setup-banner__text"><?php esc_html_e( 'Complete a quick setup so we can start monitoring your site and sending you security reports.', 'webfiable-info' ); ?></p>
+			<p class="webfiable-setup-banner__title"><?php esc_html_e( 'Ya casi está: termina de configurar Webfiable Análisis de Sitios.', 'webfiable-info' ); ?></p>
+			<p class="webfiable-setup-banner__text"><?php esc_html_e( 'Completa estos pasos para que Webfiable pueda analizar tu sitio y enseñarte el resultado en tu panel.', 'webfiable-info' ); ?></p>
 			<ul class="webfiable-setup-banner__checklist">
 				<?php foreach ( $issues as $msg ) : ?>
 					<li><span class="dashicons dashicons-marker"></span> <?php echo esc_html( $msg ); ?></li>
@@ -101,7 +101,7 @@ function webfiable_admin_notice_incomplete_setup() {
 			</ul>
 			<a href="<?php echo esc_url( $settings_url ); ?>" class="webfiable-setup-banner__cta">
 				<span class="dashicons dashicons-admin-generic"></span>
-				<?php esc_html_e( 'Open Settings', 'webfiable-info' ); ?>
+				<?php esc_html_e( 'Abrir los ajustes', 'webfiable-info' ); ?>
 			</a>
 		</div>
 	</div>
@@ -112,7 +112,7 @@ add_action( 'admin_notices', 'webfiable_admin_notice_incomplete_setup' );
 // Settings page registration.
 if ( ! function_exists( 'webfiable_admin_menu' ) ) {
 	/**
-	 * Registers the Webfiable Info settings page under Settings.
+	 * Registers the Webfiable Análisis de Sitios settings page under Settings.
 	 *
 	 * Adds an options page visible to users with the `manage_options` capability.
 	 *
@@ -121,8 +121,8 @@ if ( ! function_exists( 'webfiable_admin_menu' ) ) {
 	 */
 	function webfiable_admin_menu() {
 		add_options_page(
-			__( 'Webfiable Info', 'webfiable-info' ),
-			__( 'Webfiable Info', 'webfiable-info' ),
+			__( 'Webfiable Análisis de Sitios', 'webfiable-info' ),
+			__( 'Webfiable', 'webfiable-info' ),
 			'manage_options',
 			'webfiable-info',
 			'webfiable_render_settings_page'
@@ -196,7 +196,7 @@ function webfiable_handle_settings_submission() {
 
 	// Basic validation.
 	if ( empty( $email ) || ! is_email( $email ) ) {
-		$notice      = __( 'Please enter a valid email address (e.g., you@example.com).', 'webfiable-info' );
+		$notice      = __( 'Escribe un correo válido (por ejemplo, tu@ejemplo.com).', 'webfiable-info' );
 		$notice_type = 'error';
 		webfiable_log_action(
 			'settings_validation_failed',
@@ -269,8 +269,8 @@ function webfiable_handle_settings_submission() {
 					$enable = 'no';
 				}
 				$notice      = webfiable_is_endpoint_forced_enabled()
-					? __( 'We couldn\'t reach the data connection, but it stays on because your site configuration forces it. Go to Settings → Permalinks, click "Save Changes", then come back and try again.', 'webfiable-info' )
-					: __( 'We couldn\'t reach the data connection, so it has been turned off. Go to Settings → Permalinks, click "Save Changes", then come back and try again.', 'webfiable-info' );
+					? __( 'No hemos podido comprobar la conexión de datos, pero sigue activa porque la configuración de tu sitio la fuerza. Ve a Ajustes → Enlaces permanentes, pulsa «Guardar cambios» y vuelve a intentarlo.', 'webfiable-info' )
+					: __( 'No hemos podido comprobar la conexión de datos, así que la hemos desactivado. Ve a Ajustes → Enlaces permanentes, pulsa «Guardar cambios» y vuelve a intentarlo.', 'webfiable-info' );
 				$notice_type = 'error';
 				webfiable_log_action(
 					'endpoint_test_failed',
@@ -301,7 +301,7 @@ function webfiable_handle_settings_submission() {
 			$registration_success = is_array( $registration_result ) && ! empty( $registration_result['success'] );
 
 			if ( $registration_success ) {
-				$notice      = __( 'Settings saved — your site is now registered with Webfiable!', 'webfiable-info' );
+				$notice      = __( 'Ajustes guardados. Tu sitio está registrado en Webfiable.', 'webfiable-info' );
 				$notice_type = 'success';
 				webfiable_log_action(
 					'registration_completed',
@@ -315,8 +315,8 @@ function webfiable_handle_settings_submission() {
 					$enable = 'no';
 				}
 				$notice      = webfiable_is_endpoint_forced_enabled()
-					? __( 'Settings saved, but registration wasn\'t successful. The data connection stays on because your site configuration forces it. Check the details below and try again later.', 'webfiable-info' )
-					: __( 'Settings saved, but we couldn\'t complete the registration. Check the details below and try again later.', 'webfiable-info' );
+					? __( 'Ajustes guardados, pero el registro no se ha completado. La conexión de datos sigue activa porque la configuración de tu sitio la fuerza. Revisa los detalles de abajo y vuelve a intentarlo más tarde.', 'webfiable-info' )
+					: __( 'Ajustes guardados, pero no hemos podido completar el registro. Revisa los detalles de abajo y vuelve a intentarlo más tarde.', 'webfiable-info' );
 				$notice_type = 'error';
 				webfiable_log_action(
 					'registration_failed',
@@ -327,7 +327,7 @@ function webfiable_handle_settings_submission() {
 				);
 			}
 		} elseif ( '' === $notice ) {
-			$notice      = __( 'Settings saved successfully.', 'webfiable-info' );
+			$notice      = __( 'Ajustes guardados.', 'webfiable-info' );
 			$notice_type = 'success';
 			webfiable_log_action(
 				'settings_saved_without_registration',
@@ -430,7 +430,7 @@ function webfiable_run_endpoint_test() {
 	if ( 200 !== $code ) {
 		$result['error'] = sprintf(
 			/* translators: %d: HTTP status code returned by the endpoint verification request. */
-			__( 'The data connection returned an unexpected response (HTTP %d). Please try again or contact support if this persists.', 'webfiable-info' ),
+			__( 'La conexión de datos ha devuelto una respuesta inesperada (HTTP %d). Vuelve a intentarlo más tarde.', 'webfiable-info' ),
 			$code
 		);
 		webfiable_log_action(
@@ -462,7 +462,7 @@ function webfiable_run_endpoint_test() {
 		return $result;
 	}
 
-	$result['error'] = __( 'The data connection returned an unexpected response format. Try saving your permalinks and try again.', 'webfiable-info' );
+	$result['error'] = __( 'La conexión de datos ha devuelto una respuesta con un formato inesperado. Guarda los enlaces permanentes y vuelve a intentarlo.', 'webfiable-info' );
 	webfiable_log_action(
 		'endpoint_test_unexpected_payload',
 		array(
@@ -544,7 +544,7 @@ function webfiable_render_settings_page() {
 		<!-- Page header -->
 		<div class="webfiable-header">
 			<div class="webfiable-logo"><img src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/icon.png' ); ?>" alt="" width="36" height="36" /></div>
-			<h1><?php esc_html_e( 'Webfiable Info', 'webfiable-info' ); ?></h1>
+			<h1><?php esc_html_e( 'Webfiable Análisis de Sitios', 'webfiable-info' ); ?></h1>
 			<span class="webfiable-version"><?php echo esc_html( 'v' . WEBFIABLE_INFO_VERSION ); ?></span>
 		</div>
 
@@ -559,7 +559,7 @@ function webfiable_render_settings_page() {
 		<div class="webfiable-card">
 			<div class="webfiable-card__header">
 				<span class="dashicons dashicons-admin-generic"></span>
-				<h2><?php esc_html_e( 'Settings', 'webfiable-info' ); ?></h2>
+				<h2><?php esc_html_e( 'Ajustes', 'webfiable-info' ); ?></h2>
 			</div>
 			<form method="post">
 				<?php wp_nonce_field( 'webfiable_save_settings' ); ?>
@@ -567,16 +567,16 @@ function webfiable_render_settings_page() {
 
 					<!-- Email field -->
 					<div class="webfiable-field">
-						<label class="webfiable-field__label" for="webfiable_admin_email"><?php esc_html_e( 'Email for reports', 'webfiable-info' ); ?></label>
+						<label class="webfiable-field__label" for="webfiable_admin_email"><?php esc_html_e( 'Correo', 'webfiable-info' ); ?></label>
 						<div class="webfiable-field__input">
 							<input name="webfiable_admin_email" id="webfiable_admin_email" type="email" value="<?php echo esc_attr( $email ); ?>" placeholder="you@example.com" required />
 						</div>
-						<p class="webfiable-field__help"><?php esc_html_e( 'You\'ll receive your first detailed report and future summaries at this address.', 'webfiable-info' ); ?></p>
+						<p class="webfiable-field__help"><?php esc_html_e( 'Es el correo con el que entrarás en tu panel de Análisis de Sitios de Webfiable. Allí te enviaremos los enlaces para entrar.', 'webfiable-info' ); ?></p>
 					</div>
 
 					<!-- Consent field -->
 					<div class="webfiable-field">
-						<span class="webfiable-field__label"><?php esc_html_e( 'Data sharing consent', 'webfiable-info' ); ?></span>
+						<span class="webfiable-field__label"><?php esc_html_e( 'Consentimiento', 'webfiable-info' ); ?></span>
 						<label class="webfiable-field__checkbox">
 							<input type="checkbox" name="webfiable_consent" <?php checked( $consented ); ?> />
 							<span class="webfiable-field__checkbox-text">
@@ -584,8 +584,8 @@ function webfiable_render_settings_page() {
 							echo wp_kses(
 								sprintf(
 									/* translators: 1: Privacy policy URL. */
-									__( 'I agree to share my site\'s plugin and theme information, along with my email, with Webfiable to receive security reports. See our <a href="%s" target="_blank" rel="noopener">Privacy Policy</a>.', 'webfiable-info' ),
-									esc_url( 'https://webfiable.com/politica-privacidad/' )
+									__( 'Acepto compartir con Webfiable la lista de plugins y temas de mi sitio con sus versiones, las versiones de WordPress y de PHP, la dirección del sitio y este correo, para que analice mi sitio y me enseñe el resultado en mi panel. Consulta la <a href="%s" target="_blank" rel="noopener">política de privacidad</a>.', 'webfiable-info' ),
+									esc_url( 'https://webfiable.com/privacidad/' )
 								),
 								array(
 									'a' => array(
@@ -602,23 +602,23 @@ function webfiable_render_settings_page() {
 
 					<!-- Endpoint field -->
 					<div class="webfiable-field">
-						<span class="webfiable-field__label"><?php esc_html_e( 'Data connection', 'webfiable-info' ); ?></span>
+						<span class="webfiable-field__label"><?php esc_html_e( 'Conexión de datos', 'webfiable-info' ); ?></span>
 						<label class="webfiable-field__checkbox">
 							<input type="checkbox" name="webfiable_endpoint_enabled" <?php checked( $enabled ); ?> <?php disabled( $endpoint_forced ); ?> />
-							<span class="webfiable-field__checkbox-text"><?php esc_html_e( 'Allow Webfiable to read site data through a secure connection', 'webfiable-info' ); ?></span>
+							<span class="webfiable-field__checkbox-text"><?php esc_html_e( 'Permitir que Webfiable lea los datos de mi sitio por una conexión cifrada', 'webfiable-info' ); ?></span>
 						</label>
 						<div class="webfiable-field__endpoint-url"><?php echo esc_html( $endpoint_url ); ?></div>
 						<?php if ( $endpoint_forced ) : ?>
 							<div class="webfiable-field__forced-note">
 								<span class="dashicons dashicons-lock"></span>
-								<?php esc_html_e( 'This setting is locked on by your site configuration (WEBFIABLE_INFO_ACTIVATE_ENDPOINT).', 'webfiable-info' ); ?>
+								<?php esc_html_e( 'Este ajuste está fijado como activo por la configuración de tu sitio (WEBFIABLE_INFO_ACTIVATE_ENDPOINT).', 'webfiable-info' ); ?>
 							</div>
 						<?php endif; ?>
 					</div>
 
 				</div>
 				<div class="webfiable-card__footer">
-					<?php submit_button( __( 'Save Settings', 'webfiable-info' ), 'primary', 'webfiable_save_settings', false ); ?>
+					<?php submit_button( __( 'Guardar los ajustes', 'webfiable-info' ), 'primary', 'webfiable_save_settings', false ); ?>
 				</div>
 			</form>
 		</div>
@@ -627,7 +627,7 @@ function webfiable_render_settings_page() {
 		<div class="webfiable-card">
 			<div class="webfiable-card__header">
 				<span class="dashicons dashicons-yes-alt"></span>
-				<h2><?php esc_html_e( 'Connection Status', 'webfiable-info' ); ?></h2>
+				<h2><?php esc_html_e( 'Estado de la conexión', 'webfiable-info' ); ?></h2>
 			</div>
 			<div class="webfiable-card__body">
 				<div class="webfiable-status-grid">
@@ -638,7 +638,7 @@ function webfiable_render_settings_page() {
 							<span class="dashicons dashicons-admin-network"></span>
 						</div>
 						<div class="webfiable-status-item__content">
-							<div class="webfiable-status-item__label"><?php esc_html_e( 'Your Site ID', 'webfiable-info' ); ?></div>
+							<div class="webfiable-status-item__label"><?php esc_html_e( 'Identificador del sitio', 'webfiable-info' ); ?></div>
 							<div class="webfiable-status-item__value"><code><?php echo esc_html( $site_id ); ?></code></div>
 						</div>
 					</div>
@@ -655,20 +655,20 @@ function webfiable_render_settings_page() {
 							<span class="dashicons dashicons-<?php echo $enabled ? 'cloud-saved' : 'cloud'; ?>"></span>
 						</div>
 						<div class="webfiable-status-item__content">
-							<div class="webfiable-status-item__label"><?php esc_html_e( 'Data Connection', 'webfiable-info' ); ?></div>
+							<div class="webfiable-status-item__label"><?php esc_html_e( 'Conexión de datos', 'webfiable-info' ); ?></div>
 							<div class="webfiable-status-item__value">
 								<?php if ( $enabled ) : ?>
 									<span class="webfiable-pill webfiable-pill--green">
-										<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Enabled', 'webfiable-info' ); ?>
+										<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Activada', 'webfiable-info' ); ?>
 									</span>
 								<?php else : ?>
 									<span class="webfiable-pill webfiable-pill--red">
-										<span class="dashicons dashicons-no"></span> <?php esc_html_e( 'Disabled', 'webfiable-info' ); ?>
+										<span class="dashicons dashicons-no"></span> <?php esc_html_e( 'Desactivada', 'webfiable-info' ); ?>
 									</span>
 								<?php endif; ?>
 								<?php
 								if ( $endpoint_forced ) {
-									echo ' <small>' . esc_html__( '(locked on by site configuration)', 'webfiable-info' ) . '</small>';
+									echo ' <small>' . esc_html__( '(fijada por la configuración del sitio)', 'webfiable-info' ) . '</small>';
 								}
 								?>
 							</div>
@@ -687,15 +687,15 @@ function webfiable_render_settings_page() {
 							<span class="dashicons dashicons-<?php echo $consented ? 'lock' : 'unlock'; ?>"></span>
 						</div>
 						<div class="webfiable-status-item__content">
-							<div class="webfiable-status-item__label"><?php esc_html_e( 'Data Sharing', 'webfiable-info' ); ?></div>
+							<div class="webfiable-status-item__label"><?php esc_html_e( 'Datos compartidos', 'webfiable-info' ); ?></div>
 							<div class="webfiable-status-item__value">
 								<?php if ( $consented ) : ?>
 									<span class="webfiable-pill webfiable-pill--green">
-										<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Approved', 'webfiable-info' ); ?>
+										<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Aceptado', 'webfiable-info' ); ?>
 									</span>
 								<?php else : ?>
 									<span class="webfiable-pill webfiable-pill--yellow">
-										<span class="dashicons dashicons-marker"></span> <?php esc_html_e( 'Not yet approved', 'webfiable-info' ); ?>
+										<span class="dashicons dashicons-marker"></span> <?php esc_html_e( 'Pendiente de aceptar', 'webfiable-info' ); ?>
 									</span>
 								<?php endif; ?>
 							</div>
@@ -711,22 +711,22 @@ function webfiable_render_settings_page() {
 			<div class="webfiable-card">
 				<div class="webfiable-card__header">
 					<span class="dashicons dashicons-media-text"></span>
-					<h2><?php esc_html_e( 'Recent Activity Log', 'webfiable-info' ); ?></h2>
+					<h2><?php esc_html_e( 'Registro de actividad reciente', 'webfiable-info' ); ?></h2>
 				</div>
 				<div class="webfiable-card__body">
-					<p class="webfiable-field__help" style="margin-top:0"><?php esc_html_e( 'These details may help troubleshoot any issues with your last save attempt.', 'webfiable-info' ); ?></p>
+					<p class="webfiable-field__help" style="margin-top:0"><?php esc_html_e( 'Estos detalles pueden ayudar a entender qué ha pasado en el último guardado.', 'webfiable-info' ); ?></p>
 					<button type="button" class="webfiable-log-toggle" aria-expanded="false" onclick="var c=this.nextElementSibling;var show=c.style.display==='none'||!c.style.display;c.style.display=show?'block':'none';this.setAttribute('aria-expanded',show);">
 						<span class="dashicons dashicons-arrow-down-alt2"></span>
-						<?php esc_html_e( 'Show log entries', 'webfiable-info' ); ?>
+						<?php esc_html_e( 'Mostrar las entradas del registro', 'webfiable-info' ); ?>
 					</button>
 					<div class="webfiable-log-content" style="display:none">
 						<table class="webfiable-log-table">
 							<thead>
 								<tr>
-									<th scope="col"><?php esc_html_e( 'Time', 'webfiable-info' ); ?></th>
-									<th scope="col"><?php esc_html_e( 'Type', 'webfiable-info' ); ?></th>
-									<th scope="col"><?php esc_html_e( 'Action', 'webfiable-info' ); ?></th>
-									<th scope="col"><?php esc_html_e( 'Details', 'webfiable-info' ); ?></th>
+									<th scope="col"><?php esc_html_e( 'Hora', 'webfiable-info' ); ?></th>
+									<th scope="col"><?php esc_html_e( 'Tipo', 'webfiable-info' ); ?></th>
+									<th scope="col"><?php esc_html_e( 'Acción', 'webfiable-info' ); ?></th>
+									<th scope="col"><?php esc_html_e( 'Detalles', 'webfiable-info' ); ?></th>
 								</tr>
 							</thead>
 							<tbody>
@@ -748,7 +748,7 @@ function webfiable_render_settings_page() {
 											<?php if ( ! empty( $context_json ) ) : ?>
 												<pre><?php echo esc_html( $context_json ); ?></pre>
 											<?php else : ?>
-												<span class="webfiable-no-details"><?php esc_html_e( 'No extra details available.', 'webfiable-info' ); ?></span>
+												<span class="webfiable-no-details"><?php esc_html_e( 'Sin más detalles.', 'webfiable-info' ); ?></span>
 											<?php endif; ?>
 										</td>
 									</tr>
