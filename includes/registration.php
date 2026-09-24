@@ -125,8 +125,6 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 
 	if ( $success ) {
 		$result['success'] = true;
-		// «Registered» is a stored fact: the settings page says it only with this stamp.
-		webfiable_update_option( 'webfiable_registered_ts', time() );
 		webfiable_log_action(
 			'registration_success',
 			array(
@@ -148,6 +146,42 @@ function webfiable_attempt_registration( $site_id, $site_url, $admin_email, $pro
 		),
 		'warning'
 	);
+
+	return $result;
+}
+
+/**
+ * Register this site with Webfiable: the one registration path.
+ *
+ * The settings save and the registration after an update both call this, so
+ * both send exactly the same request. It reads the site identifier and the
+ * email from the stored options (the save persists them before calling), and
+ * writes the registration stamp only when the call succeeds.
+ *
+ * @param string $trigger What started the registration: 'settings' or 'update'.
+ * @return array<string, mixed> The attempt metadata, as the lower-level webfiable_attempt_registration returns it.
+ */
+function webfiable_register_current_site( $trigger ) {
+	$site_id  = (string) webfiable_get_option( 'webfiable_site_id' );
+	$site_url = untrailingslashit( home_url() );
+	$email    = strtolower( (string) webfiable_get_option( 'webfiable_admin_email' ) );
+
+	webfiable_log_action(
+		'registration_attempt_started',
+		array(
+			'trigger'     => (string) $trigger,
+			'site_id'     => $site_id,
+			'site_url'    => $site_url,
+			'admin_email' => $email,
+		)
+	);
+
+	$result = webfiable_attempt_registration( $site_id, $site_url, $email, WEBFIABLE_REGISTRATION_BASE );
+
+	if ( is_array( $result ) && ! empty( $result['success'] ) ) {
+		// «Registered» is a stored fact: the settings page says it only with this stamp.
+		webfiable_update_option( 'webfiable_registered_ts', time() );
+	}
 
 	return $result;
 }

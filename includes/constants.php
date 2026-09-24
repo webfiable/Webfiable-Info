@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Keep version in sync with header.
 define( 'WEBFIABLE_INFO_VERSION', '2.2.0' );
 
+// Where the registration call goes (the settings save and the update path).
+define( 'WEBFIABLE_REGISTRATION_BASE', 'https://webfiable.com' );
+
 // Public endpoint slug.
 define( 'WEBFIABLE_ENDPOINT_SLUG', 'webfiable' );
 

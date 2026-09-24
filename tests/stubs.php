@@ -19,8 +19,10 @@ $GLOBALS['wf_test_calls']   = array();
 
 /** Reset the option store and the call recorder between cases. */
 function wf_test_reset() {
-	$GLOBALS['wf_test_options'] = array();
-	$GLOBALS['wf_test_calls']   = array();
+	$GLOBALS['wf_test_options']       = array();
+	$GLOBALS['wf_test_calls']         = array();
+	$GLOBALS['wf_test_http']          = array();
+	$GLOBALS['wf_test_http_response'] = null;
 }
 
 function wf_test_record( $name, $args ) {
@@ -82,4 +84,81 @@ function esc_url( $url ) {
 
 function wp_kses( $html, $allowed ) {
 	return (string) $html;
+}
+
+// ------------------------------------------------------------ HTTP (the registration call)
+// wp_remote_post records every request and answers with the response the case
+// sets in $GLOBALS['wf_test_http_response'] (an array, or a WP_Error).
+$GLOBALS['wf_test_http']          = array();
+$GLOBALS['wf_test_http_response'] = null;
+
+class WP_Error {
+	private $code;
+	private $message;
+	private $data;
+
+	public function __construct( $code = '', $message = '', $data = '' ) {
+		$this->code    = $code;
+		$this->message = $message;
+		$this->data    = $data;
+	}
+
+	public function get_error_code() {
+		return $this->code;
+	}
+
+	public function get_error_message() {
+		return $this->message;
+	}
+
+	public function get_error_data() {
+		return $this->data;
+	}
+}
+
+function is_wp_error( $thing ) {
+	return $thing instanceof WP_Error;
+}
+
+/** A response of the shape wp_remote_post returns. */
+function wf_test_http_answer( $code, $body ) {
+	$GLOBALS['wf_test_http_response'] = array(
+		'response' => array( 'code' => $code ),
+		'body'     => $body,
+		'headers'  => array(),
+	);
+}
+
+function wp_remote_post( $url, $args = array() ) {
+	$GLOBALS['wf_test_http'][] = array( 'POST', $url, $args );
+	wf_test_record( 'wp_remote_post', array( $url ) );
+	return $GLOBALS['wf_test_http_response'];
+}
+
+function wp_remote_retrieve_response_code( $response ) {
+	return is_array( $response ) ? $response['response']['code'] : '';
+}
+
+function wp_remote_retrieve_body( $response ) {
+	return is_array( $response ) ? $response['body'] : '';
+}
+
+function wp_remote_retrieve_headers( $response ) {
+	return is_array( $response ) ? $response['headers'] : array();
+}
+
+function wp_json_encode( $data, $options = 0, $depth = 512 ) {
+	return json_encode( $data, $options, $depth );
+}
+
+function trailingslashit( $value ) {
+	return untrailingslashit( $value ) . '/';
+}
+
+function apply_filters( $hook, $value ) {
+	return $value;
+}
+
+function maybe_serialize( $data ) {
+	return is_array( $data ) || is_object( $data ) ? serialize( $data ) : $data;
 }

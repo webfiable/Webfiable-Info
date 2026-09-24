@@ -288,20 +288,8 @@ function webfiable_handle_settings_submission() {
 		}
 
 		if ( 'yes' === $enable ) {
-			webfiable_log_action(
-				'registration_attempt_started',
-				array(
-					'site_id'     => $site_id,
-					'site_url'    => untrailingslashit( home_url() ),
-					'admin_email' => strtolower( $email ),
-				)
-			);
-			$registration_result = webfiable_attempt_registration(
-				$site_id,
-				untrailingslashit( home_url() ),
-				strtolower( $email ),
-				'https://webfiable.com'
-			);
+			// The same call the registration after an update makes (includes/registration.php).
+			$registration_result = webfiable_register_current_site( 'settings' );
 
 			$registration_success = is_array( $registration_result ) && ! empty( $registration_result['success'] );
 
