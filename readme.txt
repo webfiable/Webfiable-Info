@@ -1,14 +1,14 @@
-=== Webfiable Info ===
+=== Webfiable Análisis de Sitios ===
 Contributors: webfiable
 Tags: security, monitoring, hardening, inventory, endpoint
-Requires at least: 4.7
-Tested up to: 6.9
+Requires at least: 5.3
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.1.2
+Stable tag: 2.2.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Connect your site to Webfiable (webfiable.com) to track config health and get security recommendations. Public early access (white march). Free.
+Conecta tu WordPress con el panel de Análisis de Sitios de Webfiable para analizar su seguridad y su configuración.
 
 == Description ==
 
@@ -83,6 +83,9 @@ The plugin enables and verifies the endpoint before registering. If your server 
 
 == Changelog ==
 
+= 2.2.0 =
+* Nuevo nombre: Webfiable Análisis de Sitios. Probado hasta WordPress 7.1.
+
 = 2.1.2 =
 * Fix .distignore excluding assets/ from published builds, which broke CSS and images.
 
@@ -123,6 +126,9 @@ The plugin enables and verifies the endpoint before registering. If your server 
 * Initial release with AES-256/RSA-2048 hybrid encryption.
 
 == Upgrade Notice ==
+
+= 2.2.0 =
+Nuevo nombre: Webfiable Análisis de Sitios.
 
 = 2.1.2 =
 Fix missing styles and images in published builds.
