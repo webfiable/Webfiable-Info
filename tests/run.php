@@ -260,6 +260,24 @@ wf_test_stamp_check( '' );
 assert_same( array(), wf_test_calls_of( 'wp_schedule_single_event' ), 'two concurrent detections: the second finds the queued event and schedules none (one event in total)' );
 assert_same( 1, count( $GLOBALS['wf_test_cron'] ), 'two concurrent detections: one event queued' );
 
+// WP-Cron refuses the event (a filter, or the cron option cannot be written):
+// the log says so, with WordPress's reason, and never says «scheduled».
+foreach ( array( 'could_not_set' => new WP_Error( 'could_not_set', 'The cron event list could not be saved.' ), 'schedule_returned_false' => false ) as $wf_reason => $wf_refusal ) {
+	wf_test_saved_site();
+	$GLOBALS['wf_test_cron_refusal'] = $wf_refusal;
+	$wf_log_before                   = count( webfiable_get_action_log( 'request' ) );
+	wf_test_stamp_check( null );
+	$wf_new = array();
+	foreach ( array_slice( webfiable_get_action_log( 'request' ), $wf_log_before ) as $wf_entry ) {
+		$wf_new[] = array( $wf_entry['action'], $wf_entry['level'], $wf_entry['context'] );
+	}
+	assert_same(
+		array( array(), array( array( 'update_registration_not_scheduled', 'error', array( 'from' => '', 'to' => WEBFIABLE_INFO_VERSION, 'reason' => $wf_reason ) ) ), WEBFIABLE_INFO_VERSION ),
+		array( $GLOBALS['wf_test_cron'], $wf_new, get_option( 'webfiable_plugin_version' ) ),
+		'schedule refused (' . $wf_reason . '): nothing queued, one «not_scheduled» entry at error level with the reason and no «scheduled» entry, stamp written'
+	);
+}
+
 // A fresh install (no consent yet): stamp only.
 wf_test_saved_site();
 update_option( 'webfiable_consent_ts', 0 );

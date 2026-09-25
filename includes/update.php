@@ -104,18 +104,34 @@ function webfiable_check_version_stamp() {
 	update_option( 'webfiable_plugin_version', WEBFIABLE_INFO_VERSION, true );
 
 	if ( 'schedule' === $decision ) {
+		$scheduled = true;
 		if ( ! wp_next_scheduled( WEBFIABLE_UPDATE_REGISTRATION_HOOK ) ) {
-			wp_schedule_single_event( time(), WEBFIABLE_UPDATE_REGISTRATION_HOOK );
+			// $wp_error = true: WordPress 5.7+ says why it refused; 5.3-5.6 ignore it and return false.
+			$scheduled = wp_schedule_single_event( time(), WEBFIABLE_UPDATE_REGISTRATION_HOOK, array(), true );
 		}
-		webfiable_log_action(
-			'update_registration_scheduled',
-			array(
-				'from'          => $stored,
-				'to'            => WEBFIABLE_INFO_VERSION,
-				// A site whose WP-Cron never runs waits here until it does (or until a save).
-				'cron_disabled' => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
-			)
-		);
+		if ( true === $scheduled ) {
+			webfiable_log_action(
+				'update_registration_scheduled',
+				array(
+					'from'          => $stored,
+					'to'            => WEBFIABLE_INFO_VERSION,
+					// A site whose WP-Cron never runs waits here until it does (or until a save).
+					'cron_disabled' => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
+				)
+			);
+		} else {
+			// Nothing was queued and the stamp is already written: no retry. The site
+			// stays as it was; saving the settings registers it.
+			webfiable_log_action(
+				'update_registration_not_scheduled',
+				array(
+					'from'   => $stored,
+					'to'     => WEBFIABLE_INFO_VERSION,
+					'reason' => is_wp_error( $scheduled ) ? $scheduled->get_error_code() : 'schedule_returned_false',
+				),
+				'error'
+			);
+		}
 	} else {
 		webfiable_log_action(
 			'update_registration_skipped',

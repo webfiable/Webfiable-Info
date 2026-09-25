@@ -24,6 +24,7 @@ function wf_test_reset() {
 	$GLOBALS['wf_test_http']          = array();
 	$GLOBALS['wf_test_http_response'] = null;
 	$GLOBALS['wf_test_cron']          = array();
+	$GLOBALS['wf_test_cron_refusal']  = null;
 }
 
 function wf_test_record( $name, $args ) {
@@ -171,11 +172,17 @@ function maybe_serialize( $data ) {
 // own cron option does. A list and not a map keyed by hook, so that a second
 // schedule of the same hook shows up as a second event instead of overwriting
 // the first (review round 1, R1-8): «one event queued» can then fail.
-$GLOBALS['wf_test_cron'] = array();
+$GLOBALS['wf_test_cron']         = array();
+$GLOBALS['wf_test_cron_refusal'] = null;
 
+// Set wf_test_cron_refusal to a WP_Error (WordPress 5.7+ with $wp_error) or to
+// false (older cores, or $wp_error off) to make the next schedule fail, queuing nothing.
 function wp_schedule_single_event( $timestamp, $hook, $args = array(), $wp_error = false ) {
-	$GLOBALS['wf_test_cron'][] = array( $timestamp, $hook );
 	wf_test_record( 'wp_schedule_single_event', array( $timestamp, $hook ) );
+	if ( null !== $GLOBALS['wf_test_cron_refusal'] ) {
+		return ( $wp_error || false === $GLOBALS['wf_test_cron_refusal'] ) ? $GLOBALS['wf_test_cron_refusal'] : false;
+	}
+	$GLOBALS['wf_test_cron'][] = array( $timestamp, $hook );
 	return true;
 }
 
