@@ -166,22 +166,36 @@ function maybe_serialize( $data ) {
 }
 
 // ------------------------------------------------------------ WP-Cron and rewrite rules
-// An in-memory event list keyed by hook: wp_next_scheduled sees what
-// wp_schedule_single_event queued, as WordPress's own cron option does.
+// An in-memory LIST of queued events, one array( timestamp, hook ) per call:
+// wp_next_scheduled sees what wp_schedule_single_event queued, as WordPress's
+// own cron option does. A list and not a map keyed by hook, so that a second
+// schedule of the same hook shows up as a second event instead of overwriting
+// the first (review round 1, R1-8): «one event queued» can then fail.
 $GLOBALS['wf_test_cron'] = array();
 
 function wp_schedule_single_event( $timestamp, $hook, $args = array(), $wp_error = false ) {
-	$GLOBALS['wf_test_cron'][ $hook ] = $timestamp;
+	$GLOBALS['wf_test_cron'][] = array( $timestamp, $hook );
 	wf_test_record( 'wp_schedule_single_event', array( $timestamp, $hook ) );
 	return true;
 }
 
 function wp_next_scheduled( $hook, $args = array() ) {
-	return isset( $GLOBALS['wf_test_cron'][ $hook ] ) ? $GLOBALS['wf_test_cron'][ $hook ] : false;
+	foreach ( $GLOBALS['wf_test_cron'] as $event ) {
+		if ( $event[1] === $hook ) {
+			return $event[0];
+		}
+	}
+	return false;
 }
 
 function wp_clear_scheduled_hook( $hook, $args = array(), $wp_error = false ) {
-	unset( $GLOBALS['wf_test_cron'][ $hook ] );
+	$kept = array();
+	foreach ( $GLOBALS['wf_test_cron'] as $event ) {
+		if ( $event[1] !== $hook ) {
+			$kept[] = $event;
+		}
+	}
+	$GLOBALS['wf_test_cron'] = $kept;
 	wf_test_record( 'wp_clear_scheduled_hook', array( $hook ) );
 	return 0;
 }
