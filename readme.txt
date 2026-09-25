@@ -98,7 +98,7 @@ Before registering, the plugin checks that your site's `/webfiable` address answ
 
 = What stays in my WordPress if I uninstall the plugin? =
 
-The email, the consent and the data connection setting are deleted. The site identifier is kept, so that a reinstall is still the same site, and so is the plugin's activity log (its last 100 entries), which lives in your database.
+The email, the consent and the data connection setting are deleted. The site identifier is kept, so that a reinstall is still the same site, and so is the plugin's activity log (its last 100 entries), which lives in your database and may contain the email and the site address from past saves and registrations.
 
 == Changelog ==
 
