@@ -4,8 +4,11 @@ name: Release to WordPress.org
 # proves that the tag names the code's version, that the tagged commit is on
 # main, that the same checks as CI pass, and that the zip a deploy would commit
 # has the package's files and nothing else. `deploy` is the only job that sees
-# the SVN secrets, in one step. Every action is pinned to a full commit SHA;
-# the comment names its tag.
+# the SVN secrets, in one step. `deploy` rebuilds the zip from the same commit
+# instead of taking verify's (so nothing verify runs can alter what is
+# published); `compare` then proves the two builds hold the same files, byte
+# for byte. Every action is pinned to a full commit SHA; the comment names its
+# tag.
 
 on:
   push:
@@ -109,6 +112,14 @@ jobs:
           ZIP: ${{ steps.dry.outputs.zip-path }}
         run: python3 bin/release_checks.py zip "$ZIP" --expect-version "${GITHUB_REF_NAME#v}"
 
+      # Uploaded right after the inspection, before Plugin Check runs code this
+      # workflow does not pin (@wordpress/env, the latest Plugin Check): the
+      # evidence artifact is the zip that was inspected.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: webfiable-info-${{ github.ref_name }}-verified
+          path: ${{ steps.dry.outputs.zip-path }}
+
       - name: Unpack for Plugin Check
         env:
           ZIP: ${{ steps.dry.outputs.zip-path }}
@@ -118,11 +129,6 @@ jobs:
         with:
           build-dir: ./dist/webfiable-info
           slug: webfiable-info
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: webfiable-info-${{ github.ref_name }}-verified
-          path: ${{ steps.dry.outputs.zip-path }}
 
   deploy:
     runs-on: ubuntu-24.04
@@ -148,3 +154,28 @@ jobs:
         with:
           name: webfiable-info-${{ github.ref_name }}-deployed
           path: ${{ steps.deploy.outputs.zip-path }}
+
+  # No secret, read-only token: turns a divergence between the inspected zip and
+  # the published one into a red run (it can only report after the SVN commit).
+  compare:
+    runs-on: ubuntu-24.04
+    needs: [verify, deploy]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: webfiable-info-${{ github.ref_name }}-verified
+          path: ${{ runner.temp }}/verified
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: webfiable-info-${{ github.ref_name }}-deployed
+          path: ${{ runner.temp }}/deployed
+
+      - name: The published zip holds the verified files (names and sha256 per file)
+        run: python3 bin/release_checks.py samezip "$RUNNER_TEMP/verified/webfiable-info.zip" "$RUNNER_TEMP/deployed/webfiable-info.zip"

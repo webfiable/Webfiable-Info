@@ -10,6 +10,7 @@ Sub-commands
   i18n                                the English translation covers every source string
   pot                                 regenerate languages/webfiable-info.pot
   php74 [--list]                      no PHP 8.0-only function or syntax in shipped files
+  samezip <verified> <deployed>       two zips hold the same files with the same bytes
   selftest                            proves that each check above can fail
 
 Every check prints what it read and exits 1 on the first run that finds a problem.
@@ -23,6 +24,7 @@ if sys.version_info < (3, 10):
 
 import argparse  # noqa: E402
 import difflib  # noqa: E402
+import hashlib  # noqa: E402
 import io  # noqa: E402
 import json  # noqa: E402
 import os  # noqa: E402
@@ -289,6 +291,45 @@ def check_zip(path, expect_version):
             print(f"  packaged header Version: {packaged}; expected: {expect_version}")
             if packaged != expect_version:
                 problems.append(f"packaged version {packaged} differs from {expect_version}")
+    return problems
+
+
+# --------------------------------------------------------------------------- samezip
+
+
+def zip_digests(path, label, problems):
+    """{entry name: sha256 of its bytes, or None for a directory entry}."""
+    out = {}
+    with zipfile.ZipFile(path) as zf:
+        for info in zf.infolist():
+            if info.filename in out:
+                problems.append(f"duplicate entry in the {label} zip: {info.filename}")
+                continue
+            out[info.filename] = None if info.is_dir() else hashlib.sha256(zf.read(info)).hexdigest()
+    return out
+
+
+def check_samezip(verified, deployed):
+    """The zip `verify` inspected and the zip `deploy` built hold the same entries with the
+    same bytes (names and per-file sha256; timestamps and compression are ignored)."""
+    problems = []
+    try:
+        a = zip_digests(verified, "verified", problems)
+        b = zip_digests(deployed, "deployed", problems)
+    except (OSError, zipfile.BadZipFile) as exc:
+        return [f"cannot open a zip: {exc}"]
+    print(f"  verified: {len(a)} entries; deployed: {len(b)} entries")
+    if not a or not b:
+        problems.append("a zip has no entries")
+    for name in sorted(set(a) | set(b)):
+        if name not in b:
+            problems.append(f"only in the verified zip: {name}")
+        elif name not in a:
+            problems.append(f"only in the deployed zip: {name}")
+        elif a[name] != b[name]:
+            problems.append(f"content differs: {name}")
+        else:
+            print(f"    same  {(a[name] or 'directory')[:16]}  {name}")
     return problems
 
 
@@ -611,6 +652,29 @@ def selftest():
         case("zip: with a file not in the package list", True, lambda: zcheck(fixture_zip(extra=["notes.txt"])))
         case("zip: packaged 2.2.0, expected 2.2.1", True, lambda: zcheck(fixture_zip(), expect="2.2.1"))
 
+        def zpair(deployed_change=None, deployed_extra=None):
+            # Two builds of the same files at different times, as verify and deploy make them.
+            paths = []
+            for n, stamp in ((0, (2026, 9, 25, 10, 0, 0)), (1, (2026, 9, 25, 10, 7, 30))):
+                p = os.path.join(tmp, f"pair-{n}.zip")
+                with zipfile.ZipFile(p, "w", zipfile.ZIP_DEFLATED) as zf:
+                    zf.writestr(zipfile.ZipInfo(f"{SLUG}/", stamp), "")
+                    for rel in REQUIRED:
+                        body = FIXTURE_HEADER if rel == "webfiable-info.php" else "x " + rel
+                        if n == 1 and rel == deployed_change:
+                            body += " changed"
+                        zf.writestr(zipfile.ZipInfo(f"{SLUG}/{rel}", stamp), body)
+                    if n == 1 and deployed_extra:
+                        zf.writestr(zipfile.ZipInfo(f"{SLUG}/{deployed_extra}", stamp), "x")
+                paths.append(p)
+            return check_samezip(*paths)
+
+        case("samezip: the same files built at two times (control)", False, lambda: zpair())
+        case("samezip: one file differs in the deployed zip", True, lambda: zpair(deployed_change="readme.txt"),
+             reason=f"content differs: {SLUG}/readme.txt")
+        case("samezip: a file only in the deployed zip", True, lambda: zpair(deployed_extra="notes.txt"),
+             reason=f"only in the deployed zip: {SLUG}/notes.txt")
+
         wanted = ["Fixture Plugin", "Fixture.", "Hola"]
         case("i18n: a complete .po (control)", False,
              lambda: check_po_complete(FIXTURE_PO.format(hola="Hello"), wanted))
@@ -666,6 +730,9 @@ def main(argv):
     p = sub.add_parser("php74")
     p.add_argument("--list", action="store_true", help="print the shipped PHP files, one per line")
     sub.add_parser("selftest")
+    s = sub.add_parser("samezip")
+    s.add_argument("verified")
+    s.add_argument("deployed")
     args = ap.parse_args(argv)
 
     try:
@@ -689,6 +756,8 @@ def main(argv):
             return finish("php74", check_php74(ROOT))
         if args.cmd == "selftest":
             return finish("selftest", selftest())
+        if args.cmd == "samezip":
+            return finish("samezip", check_samezip(args.verified, args.deployed))
     except CheckError as exc:
         print(f"FAIL {args.cmd}: {exc}")
         return 1
