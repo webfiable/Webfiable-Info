@@ -82,7 +82,7 @@ No. The plugin sends no email. The results of the analysis are in your panel, wh
 
 = What happens after I update the plugin? =
 
-If you had already given your consent, entered a valid email and left the data connection on, the plugin registers your site again once, in the background, through WordPress's scheduled tasks (WP-Cron). If that registration fails, nothing else changes: your settings stay as they were, the failure is written to the plugin's activity log, and you can register at any time by saving the settings.
+If you had already given your consent, entered a valid email and left the data connection on, the plugin registers your site again once, in the background, through WordPress's scheduled tasks (WP-Cron). If that registration fails, nothing else changes: your settings stay as they were, the failure is written to the plugin's internal activity log, and you can register at any time by saving the settings.
 
 = My site does not run WP-Cron. Will it register after an update? =
 
