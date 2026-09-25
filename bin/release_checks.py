@@ -550,7 +550,10 @@ def fixture_zip(drop_prefix=None, extra=None, version="2.2.0"):
 def selftest():
     results = []
 
-    def case(label, expect_fail, fn):
+    def case(label, expect_fail, fn, reason=None):
+        # `reason`: the failure must also carry this exact problem line. Without it a case
+        # whose fixture trips two layers (the forbidden list AND the exact package list) passes
+        # when either layer is removed, so one of them has no falsifier (review round 1, R1-9).
         print(f"- {label}")
         try:
             problems = fn()
@@ -560,6 +563,9 @@ def selftest():
         for p in problems:
             print(f"    finds: {p}")
         ok = failed == expect_fail
+        if ok and reason is not None and reason not in problems:
+            ok = False
+            print(f"    WRONG: the reason «{reason}» is not among the problems found")
         print(f"    {'ok' if ok else 'WRONG'}: expected {'exit 1' if expect_fail else 'exit 0'}, got {'exit 1' if failed else 'exit 0'}")
         results.append(ok)
 
@@ -597,9 +603,11 @@ def selftest():
             return check_zip(p, expect)
 
         case("zip: the package list, exactly (control)", False, lambda: zcheck(fixture_zip()))
-        case("zip: with composer.json", True, lambda: zcheck(fixture_zip(extra=["composer.json"])))
+        case("zip: with composer.json", True, lambda: zcheck(fixture_zip(extra=["composer.json"])),
+             reason="development file in the package: composer.json")
         case("zip: without languages/", True, lambda: zcheck(fixture_zip(drop_prefix="languages/")))
-        case("zip: with tests/stubs.php", True, lambda: zcheck(fixture_zip(extra=["tests/stubs.php"])))
+        case("zip: with tests/stubs.php", True, lambda: zcheck(fixture_zip(extra=["tests/stubs.php"])),
+             reason="development file in the package: tests/stubs.php")
         case("zip: with a file not in the package list", True, lambda: zcheck(fixture_zip(extra=["notes.txt"])))
         case("zip: packaged 2.2.0, expected 2.2.1", True, lambda: zcheck(fixture_zip(), expect="2.2.1"))
 
