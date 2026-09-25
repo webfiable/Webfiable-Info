@@ -293,11 +293,28 @@ def check_zip(path, expect_version):
     except (OSError, zipfile.BadZipFile) as exc:
         return [f"cannot open {path}: {exc}"]
     with zf:
-        names = sorted(n for n in zf.namelist() if not n.endswith("/"))
-        print(f"  {len(names)} files in {os.path.basename(path)}:")
+        entries = zf.namelist()
+        names = sorted(n for n in entries if not n.endswith("/"))
+        dirs = sorted(n for n in entries if n.endswith("/"))
+        print(f"  {len(names)} files and {len(dirs)} directory entries in {os.path.basename(path)}:")
         for n in names:
             print(f"    {n}")
         prefix = SLUG + "/"
+        # Every entry, file or directory, is a plain relative path.
+        for n in entries:
+            if n.startswith("/") or "\\" in n or ".." in n.rstrip("/").split("/"):
+                problems.append(f"unsafe path in the zip: {n}")
+        # A directory entry is not a package file (never «not in the package list»), but
+        # one outside the folder or naming a development directory is refused, even empty.
+        for d in dirs:
+            if d == prefix:
+                continue
+            if not d.startswith(prefix):
+                problems.append(f"outside the {prefix} folder: {d}")
+                continue
+            rel = d[len(prefix):]
+            if any(p in FORBIDDEN_DIRS or p in FORBIDDEN_NAMES for p in rel.rstrip("/").split("/")):
+                problems.append(f"development directory in the package: {rel}")
         outside = [n for n in names if not n.startswith(prefix)]
         for n in outside:
             problems.append(f"outside the {prefix} folder: {n}")
@@ -602,9 +619,11 @@ def write_fixture(d, header=FIXTURE_HEADER, constants=FIXTURE_CONSTANTS, readme=
         fh.write(readme if readme is not None else FIXTURE_README.format(notice="Fixture."))
 
 
-def fixture_zip(drop_prefix=None, extra=None, version="2.2.0"):
+def fixture_zip(drop_prefix=None, extra=None, version="2.2.0", dirs=None):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:
+        for d in dirs or []:
+            zf.writestr(d, "")
         for rel in REQUIRED:
             if drop_prefix and rel.startswith(drop_prefix):
                 continue
@@ -687,6 +706,17 @@ def selftest():
              reason="development file in the package: tests/stubs.php")
         case("zip: with a file not in the package list", True, lambda: zcheck(fixture_zip(extra=["notes.txt"])))
         case("zip: packaged 2.2.0, expected 2.2.1", True, lambda: zcheck(fixture_zip(), expect="2.2.1"))
+        # `zip -r` (the deploy action) writes one entry per directory, the folder included.
+        package_dirs = sorted({f"{SLUG}/"} | {f"{SLUG}/{'/'.join(r.split('/')[:k])}/"
+                                              for r in REQUIRED for k in range(1, r.count("/") + 1)})
+        case("zip: with the directory entries zip -r writes (control)", False,
+             lambda: zcheck(fixture_zip(dirs=package_dirs)))
+        case("zip: an empty tests/ directory entry", True,
+             lambda: zcheck(fixture_zip(dirs=package_dirs + [f"{SLUG}/tests/"])),
+             reason="development directory in the package: tests/")
+        case("zip: a directory entry climbing out with ..", True,
+             lambda: zcheck(fixture_zip(dirs=package_dirs + [f"{SLUG}/../"])),
+             reason=f"unsafe path in the zip: {SLUG}/../")
 
         def zpair(deployed_change=None, deployed_extra=None):
             # Two builds of the same files at different times, as verify and deploy make them.
