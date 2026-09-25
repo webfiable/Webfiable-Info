@@ -172,9 +172,33 @@ def subsection(section_lines, version):
     return out
 
 
-def constant_version(text):
-    m = re.search(r"define\(\s*'WEBFIABLE_INFO_VERSION'\s*,\s*'([^']+)'\s*\)", text)
-    return m.group(1) if m else None
+def php_strip_comments(text):
+    """PHP source without its comments (//, # and /* */); string literals kept as they are."""
+    out = []
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in "'\"":
+            j = i + 1
+            while j < n and text[j] != c:
+                j += 2 if text[j] == "\\" else 1
+            out.append(text[i:j + 1])
+            i = j + 1
+        elif text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            i = n if end < 0 else end + 2
+        elif c == "#" or text.startswith("//", i):
+            end = text.find("\n", i)
+            i = n if end < 0 else end
+        else:
+            out.append(c)
+            i += 1
+    return "".join(out)
+
+
+def constant_versions(text):
+    """Every live (uncommented) define of WEBFIABLE_INFO_VERSION, in order."""
+    return re.findall(r"define\(\s*'WEBFIABLE_INFO_VERSION'\s*,\s*'([^']+)'\s*\)", php_strip_comments(text))
 
 
 def major_minor(version):
@@ -202,12 +226,15 @@ def check_coherence(root, tag=None, wordpress_current=None):
     """Returns the list of problems (empty = coherent)."""
     problems = []
     header = php_header(read(os.path.join(root, "webfiable-info.php")))
-    const = constant_version(read(os.path.join(root, "includes", "constants.php")))
+    consts = constant_versions(read(os.path.join(root, "includes", "constants.php")))
+    const = consts[0] if len(consts) == 1 else None
     name, fields, sections = readme_parts(read(os.path.join(root, "readme.txt")))
 
     version = header.get("Version")
     stable = fields.get("Stable tag")
     print(f"  header Version: {version}; WEBFIABLE_INFO_VERSION: {const}; readme Stable tag: {stable}")
+    if len(consts) != 1:
+        problems.append(f"constants.php has {len(consts)} live WEBFIABLE_INFO_VERSION defines, not 1: {consts}")
     if not version or version != const or version != stable:
         problems.append(f"versions differ: header {version}, constants.php {const}, readme Stable tag {stable}")
 
@@ -635,6 +662,15 @@ def selftest():
         case("coherence: upgrade notice of 301 characters", True,
              lambda: coh(readme=FIXTURE_README.format(notice="a" * 301)))
         case("coherence: --tag v2.2.0 (control)", False, lambda: coh(tag="v2.2.0"))
+        live = "define( 'WEBFIABLE_INFO_VERSION', '{}' );"
+        case("coherence: a commented-out define after the live one (control)", False,
+             lambda: coh(constants=FIXTURE_CONSTANTS + "// " + live.format("2.1.9") + "\n"))
+        case("coherence: the live define is 2.1.9, a commented-out one says 2.2.0", True,
+             lambda: coh(constants="<?php\n/* " + live.format("2.2.0") + " */\n" + live.format("2.1.9") + "\n"),
+             reason="versions differ: header 2.2.0, constants.php 2.1.9, readme Stable tag 2.2.0")
+        case("coherence: two live defines", True,
+             lambda: coh(constants=FIXTURE_CONSTANTS + live.format("2.2.0") + "\n"),
+             reason="constants.php has 2 live WEBFIABLE_INFO_VERSION defines, not 1: ['2.2.0', '2.2.0']")
         case("coherence: --tag v2.2.1 against code 2.2.0", True, lambda: coh(tag="v2.2.1"))
 
         def zcheck(data, expect="2.2.0"):
