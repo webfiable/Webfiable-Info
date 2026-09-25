@@ -653,6 +653,11 @@
 	.webfiable-field__checkbox {
 		min-height: 44px;
 	}
+
+	/* The page's own save button: WordPress keeps it at 40 px here. */
+	.webfiable-wrap .button-primary {
+		min-height: 44px;
+	}
 }
 
 @media screen and (max-width: 600px) {
