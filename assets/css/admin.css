@@ -322,7 +322,9 @@
 	font-size: 12px;
 	font-family: Consolas, Monaco, monospace;
 	color: var(--wf-graphite);
-	word-break: break-all;
+	/* Break the URL only where it would overflow, never inside a word that fits. */
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .webfiable-field__forced-note {
@@ -429,7 +431,9 @@
 .webfiable-status-item__value {
 	font-size: 13px;
 	color: var(--wf-ink);
-	word-break: break-all;
+	/* Words wrap at spaces and hyphens; an unbroken run still wraps, only at the edge. */
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .webfiable-status-item__value code {
@@ -520,8 +524,10 @@
 	overflow-x: auto;
 }
 
+/* Below 640 px the wrapper scrolls instead of crushing the columns. */
 .webfiable-log-table {
 	width: 100%;
+	min-width: 640px;
 	border-collapse: separate;
 	border-spacing: 0;
 	font-size: 12px;
@@ -550,6 +556,11 @@
 
 .webfiable-log-table tbody tr:last-child td {
 	border-bottom: none;
+}
+
+/* The time stays on one line. */
+.webfiable-log-table td:first-child code {
+	white-space: nowrap;
 }
 
 .webfiable-log-table .webfiable-log-level {
@@ -582,7 +593,9 @@
 	color: var(--wf-graphite);
 }
 
+/* The details keep a readable measure; the wrapper scrolls for the rest. */
 .webfiable-log-table pre {
+	min-width: 280px;
 	margin: 4px 0 0;
 	padding: 8px 10px;
 	background: var(--wf-paper);
