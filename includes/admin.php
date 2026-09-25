@@ -98,7 +98,7 @@ function webfiable_admin_notice_incomplete_setup() {
 		</div>
 		<div class="webfiable-setup-banner__body">
 			<p class="webfiable-setup-banner__title"><?php esc_html_e( 'Ya casi está: termina de configurar Webfiable Análisis de Sitios.', 'webfiable-info' ); ?></p>
-			<p class="webfiable-setup-banner__text"><?php esc_html_e( 'Completa estos pasos para que Webfiable pueda analizar tu sitio y enseñarte el resultado en tu panel.', 'webfiable-info' ); ?></p>
+			<p class="webfiable-setup-banner__text"><?php esc_html_e( 'Completa estos pasos para que Webfiable pueda analizar tu sitio.', 'webfiable-info' ); ?></p>
 			<ul class="webfiable-setup-banner__checklist">
 				<?php foreach ( $issues as $msg ) : ?>
 					<li><span class="dashicons dashicons-marker"></span> <?php echo esc_html( $msg ); ?></li>
@@ -682,7 +682,7 @@ function webfiable_render_settings_page() {
 							echo wp_kses(
 								sprintf(
 									/* translators: 1: Privacy policy URL. */
-									__( 'Acepto compartir con Webfiable la lista de plugins y temas de mi sitio con sus versiones, las versiones de WordPress y de PHP, la dirección del sitio y este correo, para que analice mi sitio y me enseñe el resultado en mi panel. Consulta la <a href="%s" target="_blank" rel="noopener">política de privacidad</a>.', 'webfiable-info' ),
+									__( 'Acepto compartir con Webfiable la lista de plugins y temas de mi sitio con sus versiones, las versiones de WordPress y de PHP, la dirección del sitio y este correo, para que analice mi sitio. Consulta la <a href="%s" target="_blank" rel="noopener">política de privacidad</a>.', 'webfiable-info' ),
 									esc_url( 'https://webfiable.com/privacidad/' )
 								),
 								array(

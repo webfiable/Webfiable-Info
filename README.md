@@ -4,7 +4,7 @@
   <img src="assets/img/webfiable-lockup-light.svg" alt="Webfiable" width="177" height="28">
 </p>
 
-Connects your WordPress site to Webfiable's site analysis service, which reviews its security and configuration and shows the results in your panel.
+Connects your WordPress site to the panel where Webfiable shows its analyses of your site's security and configuration.
 
 [Análisis de Sitios](https://siteaudit.webfiable.com) · [Plugin on WordPress.org](https://wordpress.org/plugins/webfiable-info/) · [Webfiable](https://webfiable.com)
 
@@ -14,7 +14,7 @@ Connects your WordPress site to Webfiable's site analysis service, which reviews
 
 **Webfiable Análisis de Sitios** connects your WordPress site to [Análisis de Sitios de Webfiable](https://siteaudit.webfiable.com), the Webfiable service that reviews the security and configuration of websites.
 
-Without the plugin, Webfiable only sees what your site shows from the outside. With the plugin, and with your consent, it can read the full list of installed plugins and themes with their versions, and the exact WordPress and PHP versions. It analyses your site with that data and shows you the results in your panel.
+Without the plugin, Webfiable only sees what your site shows from the outside. With the plugin, and with your consent, it can read the full list of installed plugins and themes with their versions, and the exact WordPress and PHP versions. It uses that data to analyse your site, and the plugin connects your site to the panel where Webfiable shows its analyses.
 
 You sign in to your panel at <https://siteaudit.webfiable.com/acceso> with the email you entered in the plugin settings: you receive a single-use sign-in link, with no password. If the plugin was already set up before an update, your site registers again once after the update, in the background.
 

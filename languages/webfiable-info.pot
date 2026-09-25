@@ -47,7 +47,7 @@ msgid "Ya casi está: termina de configurar Webfiable Análisis de Sitios."
 msgstr ""
 
 #: includes/admin.php
-msgid "Completa estos pasos para que Webfiable pueda analizar tu sitio y enseñarte el resultado en tu panel."
+msgid "Completa estos pasos para que Webfiable pueda analizar tu sitio."
 msgstr ""
 
 #: includes/admin.php
@@ -167,7 +167,7 @@ msgid "Consentimiento"
 msgstr ""
 
 #: includes/admin.php
-msgid "Acepto compartir con Webfiable la lista de plugins y temas de mi sitio con sus versiones, las versiones de WordPress y de PHP, la dirección del sitio y este correo, para que analice mi sitio y me enseñe el resultado en mi panel. Consulta la <a href=\"%s\" target=\"_blank\" rel=\"noopener\">política de privacidad</a>."
+msgid "Acepto compartir con Webfiable la lista de plugins y temas de mi sitio con sus versiones, las versiones de WordPress y de PHP, la dirección del sitio y este correo, para que analice mi sitio. Consulta la <a href=\"%s\" target=\"_blank\" rel=\"noopener\">política de privacidad</a>."
 msgstr ""
 
 #: includes/admin.php
