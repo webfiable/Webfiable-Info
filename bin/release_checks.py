@@ -33,6 +33,7 @@ import shutil  # noqa: E402
 import subprocess  # noqa: E402
 import tempfile  # noqa: E402
 import urllib.request  # noqa: E402
+import warnings  # noqa: E402
 import zipfile  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -718,18 +719,29 @@ def selftest():
              lambda: zcheck(fixture_zip(dirs=package_dirs + [f"{SLUG}/../"])),
              reason=f"unsafe path in the zip: {SLUG}/../")
 
-        def zpair(deployed_change=None, deployed_extra=None):
+        def zpair(deployed_change=None, deployed_extra=None, deployed_drop=None, deployed_duplicate=None,
+                  deployed_empty=False):
             # Two builds of the same files at different times, as verify and deploy make them.
             paths = []
             for n, stamp in ((0, (2026, 9, 25, 10, 0, 0)), (1, (2026, 9, 25, 10, 7, 30))):
                 p = os.path.join(tmp, f"pair-{n}.zip")
                 with zipfile.ZipFile(p, "w", zipfile.ZIP_DEFLATED) as zf:
+                    if n == 1 and deployed_empty:
+                        paths.append(p)
+                        continue
                     zf.writestr(zipfile.ZipInfo(f"{SLUG}/", stamp), "")
                     for rel in REQUIRED:
+                        if n == 1 and rel == deployed_drop:
+                            continue
                         body = FIXTURE_HEADER if rel == "webfiable-info.php" else "x " + rel
                         if n == 1 and rel == deployed_change:
                             body += " changed"
                         zf.writestr(zipfile.ZipInfo(f"{SLUG}/{rel}", stamp), body)
+                        if n == 1 and rel == deployed_duplicate:
+                            # The same name and bytes again: only the duplicate refusal can see it.
+                            with warnings.catch_warnings():
+                                warnings.simplefilter("ignore", UserWarning)
+                                zf.writestr(zipfile.ZipInfo(f"{SLUG}/{rel}", stamp), body)
                     if n == 1 and deployed_extra:
                         zf.writestr(zipfile.ZipInfo(f"{SLUG}/{deployed_extra}", stamp), "x")
                 paths.append(p)
@@ -740,6 +752,12 @@ def selftest():
              reason=f"content differs: {SLUG}/readme.txt")
         case("samezip: a file only in the deployed zip", True, lambda: zpair(deployed_extra="notes.txt"),
              reason=f"only in the deployed zip: {SLUG}/notes.txt")
+        case("samezip: a file only in the verified zip", True, lambda: zpair(deployed_drop="readme.txt"),
+             reason=f"only in the verified zip: {SLUG}/readme.txt")
+        case("samezip: a duplicate entry in the deployed zip", True, lambda: zpair(deployed_duplicate="readme.txt"),
+             reason=f"duplicate entry in the deployed zip: {SLUG}/readme.txt")
+        case("samezip: an empty deployed zip", True, lambda: zpair(deployed_empty=True),
+             reason="a zip has no entries")
 
         wanted = ["Fixture Plugin", "Fixture.", "Hola"]
         case("i18n: a complete .po (control)", False,
