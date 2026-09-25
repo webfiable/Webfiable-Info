@@ -187,7 +187,18 @@
 	padding: 20px;
 }
 
-.webfiable-card__body p {
+/* The 20 px padding is the whole gap: no paragraph margin added on top or below. */
+.webfiable-card__body > :first-child {
+	margin-top: 0;
+}
+
+.webfiable-card__body > :last-child {
+	margin-bottom: 0;
+}
+
+/* One measure for every running text on the page. */
+.webfiable-card__body p,
+.webfiable-field__checkbox-text {
 	max-width: 66ch;
 }
 
@@ -519,6 +530,12 @@
 	transform: rotate(180deg);
 }
 
+@media (prefers-reduced-motion: reduce) {
+	.webfiable-log > summary .dashicons {
+		transition: none;
+	}
+}
+
 .webfiable-log-scroll {
 	margin-top: 12px;
 	overflow-x: auto;
@@ -628,10 +645,12 @@
 
 	.webfiable-field__input input[type="email"] {
 		max-width: 100%;
+		min-height: 44px;
 	}
 
 	.webfiable-log > summary,
-	.webfiable-button--lime {
+	.webfiable-button--lime,
+	.webfiable-field__checkbox {
 		min-height: 44px;
 	}
 }
