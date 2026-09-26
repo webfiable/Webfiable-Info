@@ -1,227 +1,233 @@
+# English (United States) translation for Webfiable Análisis de Sitios.
+# The source strings are Spanish; this file is the English translation.
 # Copyright (C) 2024-2026 Webfiable
 # This file is distributed under the GPLv3 or later.
 msgid ""
 msgstr ""
 "Project-Id-Version: Webfiable Análisis de Sitios 2.2.0\n"
 "Report-Msgid-Bugs-To: https://webfiable.com\n"
+"POT-Creation-Date: 2026-09-24 00:00+0000\n"
+"PO-Revision-Date: 2026-09-24 00:00+0000\n"
+"Last-Translator: Webfiable <info@webfiable.com>\n"
+"Language-Team: English (United States) <info@webfiable.com>\n"
+"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Plugin Name of the plugin
 msgid "Webfiable Análisis de Sitios"
-msgstr ""
+msgstr "Webfiable Análisis de Sitios"
 
 #. Description of the plugin
 msgid "Conecta tu WordPress con el panel de Análisis de Sitios de Webfiable para analizar su seguridad y su configuración."
-msgstr ""
+msgstr "Connects your WordPress site to the Webfiable Análisis de Sitios panel to analyse its security and configuration."
 
 #: includes/admin.php
 msgid "Ajustes"
-msgstr ""
+msgstr "Settings"
 
 #: includes/admin.php
 msgid "Privacidad"
-msgstr ""
+msgstr "Privacy"
 
 #: includes/admin.php
 msgid "Webfiable Análisis de Sitios necesita la extensión OpenSSL de PHP para funcionar. Pide a tu proveedor de alojamiento que la active."
-msgstr ""
+msgstr "Webfiable Análisis de Sitios needs the PHP OpenSSL extension to work. Ask your hosting provider to enable it."
 
 #: includes/admin.php
 msgid "Escribe un correo válido: es el que usarás para entrar en tu panel."
-msgstr ""
+msgstr "Enter a valid email address: it is the one you will use to sign in to your panel."
 
 #: includes/admin.php
 msgid "Acepta compartir los datos de tu sitio con Webfiable."
-msgstr ""
+msgstr "Agree to share your site's details with Webfiable."
 
 #: includes/admin.php
 msgid "Activa la conexión de datos para que Webfiable pueda leer la información de tu sitio."
-msgstr ""
+msgstr "Turn on the data connection so Webfiable can read your site info."
 
 #: includes/admin.php
 msgid "Ya casi está: termina de configurar Webfiable Análisis de Sitios."
-msgstr ""
+msgstr "Almost there: finish setting up Webfiable Análisis de Sitios."
 
 #: includes/admin.php
 msgid "Completa estos pasos para que Webfiable pueda analizar tu sitio."
-msgstr ""
+msgstr "Complete these steps so Webfiable can analyse your site."
 
 #: includes/admin.php
 msgid "Abrir los ajustes"
-msgstr ""
+msgstr "Open Settings"
 
 #: includes/admin.php
 msgid "Webfiable"
-msgstr ""
+msgstr "Webfiable"
 
 #: includes/admin.php
 msgid "Escribe un correo válido (por ejemplo, tu@ejemplo.com)."
-msgstr ""
+msgstr "Please enter a valid email address (e.g., you@example.com)."
 
 #: includes/admin.php
 msgid "No hemos podido comprobar la conexión de datos, pero sigue activa porque la configuración de tu sitio la fuerza. Ve a Ajustes → Enlaces permanentes, pulsa «Guardar cambios» y vuelve a intentarlo."
-msgstr ""
+msgstr "We couldn't reach the data connection, but it stays on because your site configuration forces it. Go to Settings → Permalinks, click \"Save Changes\", then come back and try again."
 
 #: includes/admin.php
 msgid "No hemos podido comprobar la conexión de datos, así que la hemos desactivado. Ve a Ajustes → Enlaces permanentes, pulsa «Guardar cambios» y vuelve a intentarlo."
-msgstr ""
+msgstr "We couldn't reach the data connection, so it has been turned off. Go to Settings → Permalinks, click \"Save Changes\", then come back and try again."
 
 #: includes/admin.php
 msgid "Ajustes guardados. Tu sitio está registrado en Webfiable."
-msgstr ""
+msgstr "Settings saved. Your site is registered with Webfiable."
 
 #: includes/admin.php
 msgid "Ajustes guardados, pero el registro no se ha completado. La conexión de datos sigue activa porque la configuración de tu sitio la fuerza. Revisa los detalles de abajo y vuelve a intentarlo más tarde."
-msgstr ""
+msgstr "Settings saved, but registration wasn't successful. The data connection stays on because your site configuration forces it. Check the details below and try again later."
 
 #: includes/admin.php
 msgid "Ajustes guardados, pero no hemos podido completar el registro. Revisa los detalles de abajo y vuelve a intentarlo más tarde."
-msgstr ""
+msgstr "Settings saved, but we couldn't complete the registration. Check the details below and try again later."
 
 #: includes/admin.php
 msgid "Ajustes guardados."
-msgstr ""
+msgstr "Settings saved successfully."
 
 #: includes/admin.php
 msgid "La conexión de datos ha devuelto una respuesta inesperada (HTTP %d). Vuelve a intentarlo más tarde."
-msgstr ""
+msgstr "The data connection returned an unexpected response (HTTP %d). Please try again later."
 
 #: includes/admin.php
 msgid "La conexión de datos ha devuelto una respuesta con un formato inesperado. Guarda los enlaces permanentes y vuelve a intentarlo."
-msgstr ""
+msgstr "The data connection returned an unexpected response format. Try saving your permalinks and try again."
 
 #: includes/admin.php
 msgid "Tu sitio está registrado en Análisis de Sitios de Webfiable. Puedes verlo en tu panel."
-msgstr ""
+msgstr "Your site is registered with Análisis de Sitios de Webfiable. You can see it in your panel."
 
 #: includes/admin.php
 msgid "Para entrar, escribe %s en la página de acceso: te enviaremos a ese correo un enlace de un solo uso, sin contraseña."
-msgstr ""
+msgstr "To sign in, enter %s on the sign-in page: we will send a single-use link to that address, no password needed."
 
 #: includes/admin.php
 msgid "Análisis de Sitios"
-msgstr ""
+msgstr "Análisis de Sitios"
 
 #: includes/admin.php
 msgid "Registro de actividad reciente"
-msgstr ""
+msgstr "Recent Activity Log"
 
 #: includes/admin.php
 msgid "Estos detalles pueden ayudar a entender qué ha pasado en el último guardado."
-msgstr ""
+msgstr "These details may help troubleshoot any issues with your last save attempt."
 
 #: includes/admin.php
 msgid "Mostrar las entradas del registro"
-msgstr ""
+msgstr "Show log entries"
 
 #: includes/admin.php
 msgid "Hora"
-msgstr ""
+msgstr "Time"
 
 #: includes/admin.php
 msgid "Tipo"
-msgstr ""
+msgstr "Type"
 
 #: includes/admin.php
 msgid "Acción"
-msgstr ""
+msgstr "Action"
 
 #: includes/admin.php
 msgid "Detalles"
-msgstr ""
+msgstr "Details"
 
 #: includes/admin.php
 msgid "Sin más detalles."
-msgstr ""
+msgstr "No extra details available."
 
 #: includes/admin.php
 msgid "Tus informes en Webfiable"
-msgstr ""
+msgstr "Your reports on Webfiable"
 
 #: includes/admin.php
 msgid "Entrar"
-msgstr ""
+msgstr "Sign in"
 
 #: includes/admin.php
 msgid "(se abre en una pestaña nueva)"
-msgstr ""
+msgstr "(opens in a new tab)"
 
 #: includes/admin.php
 msgid "Escribe tu correo, da tu consentimiento y guarda: registraremos tu sitio y aquí verás cómo entrar en tu panel."
-msgstr ""
+msgstr "Enter your email, give your consent and save: we will register your site and show you here how to sign in to your panel."
 
 #: includes/admin.php
 msgid "Correo"
-msgstr ""
+msgstr "Email"
 
 #: includes/admin.php
 msgid "Es el correo con el que entrarás en tu panel de Análisis de Sitios de Webfiable. Allí te enviaremos los enlaces para entrar."
-msgstr ""
+msgstr "The email you will use to sign in to your Análisis de Sitios de Webfiable panel. Sign-in links are sent to it."
 
 #: includes/admin.php
 msgid "Consentimiento"
-msgstr ""
+msgstr "Data sharing consent"
 
 #: includes/admin.php
 msgid "Acepto compartir con Webfiable la lista de plugins y temas de mi sitio con sus versiones, las versiones de WordPress y de PHP, la dirección del sitio y este correo, para que analice mi sitio. Consulta la <a href=\"%s\" target=\"_blank\" rel=\"noopener\">política de privacidad</a>."
-msgstr ""
+msgstr "I agree to share my site's plugins and themes with their versions, the WordPress and PHP versions, the site address and this email with Webfiable, so it can analyse my site. See the <a href=\"%s\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."
 
 #: includes/admin.php
 msgid "Conexión de datos"
-msgstr ""
+msgstr "Data connection"
 
 #: includes/admin.php
 msgid "Permitir que Webfiable lea los datos de mi sitio por una conexión cifrada"
-msgstr ""
+msgstr "Allow Webfiable to read site data through a secure connection"
 
 #: includes/admin.php
 msgid "Este ajuste está fijado como activo por la configuración de tu sitio (WEBFIABLE_INFO_ACTIVATE_ENDPOINT)."
-msgstr ""
+msgstr "This setting is locked on by your site configuration (WEBFIABLE_INFO_ACTIVATE_ENDPOINT)."
 
 #: includes/admin.php
 msgid "Guardar los ajustes"
-msgstr ""
+msgstr "Save Settings"
 
 #: includes/admin.php
 msgid "Estado de la conexión"
-msgstr ""
+msgstr "Connection Status"
 
 #: includes/admin.php
 msgid "Identificador del sitio"
-msgstr ""
+msgstr "Your Site ID"
 
 #: includes/admin.php
 msgid "Activada"
-msgstr ""
+msgstr "Enabled"
 
 #: includes/admin.php
 msgid "Desactivada"
-msgstr ""
+msgstr "Disabled"
 
 #: includes/admin.php
 msgid "(fijada por la configuración del sitio)"
-msgstr ""
+msgstr "(locked on by site configuration)"
 
 #: includes/admin.php
 msgid "Datos compartidos"
-msgstr ""
+msgstr "Data Sharing"
 
 #: includes/admin.php
 msgid "Aceptado"
-msgstr ""
+msgstr "Approved"
 
 #: includes/admin.php
 msgid "Pendiente de aceptar"
-msgstr ""
+msgstr "Not yet approved"
 
 #: includes/registration.php
 msgid "Falta información obligatoria. Rellena todos los campos y vuelve a intentarlo."
-msgstr ""
+msgstr "Some required information is missing. Please fill in all fields and try again."
 
 #: includes/registration.php
 msgid "Webfiable ha devuelto una respuesta inesperada. Vuelve a intentarlo más tarde."
-msgstr ""
+msgstr "We received an unexpected response from Webfiable. Please try again later."

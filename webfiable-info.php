@@ -1,14 +1,17 @@
 <?php
 /**
- * Plugin Name: Webfiable Info
+ * Plugin Name: Webfiable Análisis de Sitios
  * Plugin URI: https://wordpress.org/plugins/webfiable-info/
- * Description: Ensure your website's security posture and configuration health with monitoring and recommendations.
- * Version: 2.1.2
- * Author: Webfiable Team
+ * Description: Conecta tu WordPress con el panel de Análisis de Sitios de Webfiable para analizar su seguridad y su configuración.
+ * Version: 2.2.0
+ * Requires at least: 5.3
+ * Requires PHP: 7.4
+ * Author: Webfiable
  * Author URI: https://webfiable.com
  * License: GPLv3 or later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: webfiable-info
+ * Domain Path: /languages
  *
  * @package Webfiable_Info
  */
@@ -32,6 +35,7 @@ require_once WEBFIABLE_PLUGIN_DIR . 'includes/admin.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/routing.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/endpoint.php';
 require_once WEBFIABLE_PLUGIN_DIR . 'includes/registration.php';
+require_once WEBFIABLE_PLUGIN_DIR . 'includes/update.php';
 
 /** Register activation/deactivation hooks provided by routing.php */
 register_activation_hook( __FILE__, 'webfiable_activate' );

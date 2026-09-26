@@ -9,6 +9,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; }
 
 /**
+ * Locales whose translation file is tried, in order.
+ *
+ * The source strings are Spanish, so a Spanish locale (es_ES, es_MX, es_AR…) needs
+ * no file and sees the source. Every other locale tries its own file first and then
+ * the bundled English translation (en_US), which is what non-Spanish sites saw
+ * before 2.2.0.
+ *
+ * @param string $locale Current locale, e.g. de_DE.
+ * @return string[] Locales to try, most specific first.
+ */
+function webfiable_locales_to_try( $locale ) {
+	$locale  = (string) $locale;
+	$locales = array( $locale );
+
+	if ( 'es' !== substr( $locale, 0, 2 ) && 'en_US' !== $locale ) {
+		$locales[] = 'en_US';
+	}
+
+	return $locales;
+}
+
+/**
  * Ensure translations load for the current locale.
  *
  * WordPress.org sites receive translations automatically, but we keep a fallback for
@@ -27,16 +49,8 @@ function webfiable_load_textdomain() {
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core WP hook.
 	$locale = apply_filters( 'plugin_locale', $locale, $domain );
 
-	// Build a list of locales to try: exact match first, then base-language fallback.
-	$locales_to_try = array( $locale );
-	$lang_prefix    = substr( $locale, 0, 2 );
-
-	// For any Spanish variant (es_AR, es_MX, es_PE, …) fall back to es_ES.
-	if ( 'es' === $lang_prefix && 'es_ES' !== $locale ) {
-		$locales_to_try[] = 'es_ES';
-	}
-
-	foreach ( $locales_to_try as $try_locale ) {
+	// Exact match first, then the bundled English translation (never for Spanish).
+	foreach ( webfiable_locales_to_try( $locale ) as $try_locale ) {
 		// Try WP global languages directory first.
 		$global_mo = WP_LANG_DIR . '/plugins/' . $domain . '-' . $try_locale . '.mo';
 		if ( file_exists( $global_mo ) ) {

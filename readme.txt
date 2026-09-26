@@ -1,150 +1,158 @@
-=== Webfiable Info ===
+=== Webfiable Análisis de Sitios ===
 Contributors: webfiable
 Tags: security, monitoring, hardening, inventory, endpoint
-Requires at least: 4.7
-Tested up to: 6.9
+Requires at least: 5.3
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.1.2
+Stable tag: 2.2.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Connect your site to Webfiable (webfiable.com) to track config health and get security recommendations. Public early access (white march). Free.
+Connects your WordPress site to the panel where Webfiable shows its analyses of your site's security and configuration.
 
 == Description ==
 
-**Improve your site's security posture and configuration health with monitoring and recommendations.**
+**Webfiable Análisis de Sitios** connects your WordPress site to Análisis de Sitios de Webfiable (https://siteaudit.webfiable.com), the Webfiable service that reviews the security and configuration of websites.
 
-Webfiable Info is the on-site companion for the Webfiable security service (https://webfiable.com). It securely gathers information about your site's WordPress version, plugins, themes, and basic site metadata and registers your site with Webfiable so you can receive ongoing reports via email. You stay in control: consent is explicit, and the public endpoint is opt-in and verified on save.
+Without the plugin, Webfiable only sees what your site shows from the outside. With the plugin, and with your consent, it can read the full list of installed plugins and themes with their versions, and the exact WordPress and PHP versions. It uses that data to analyse your site, and the plugin connects your site to the panel where Webfiable shows its analyses.
 
-During the white march period, there is no separate signup or billing - the plugin registers your site automatically from the settings screen and you can use the service for free. A subscription may be required in the future; we will notify administrators well in advance.
+= How it works =
 
-== Features ==
+1. You install and activate the plugin.
+2. In **Settings → Webfiable** you enter your email, give your consent and leave the data connection on.
+3. The plugin checks that the connection answers and registers your site with Webfiable.
+4. You sign in to your panel at https://siteaudit.webfiable.com/acceso with that email: you receive a single-use sign-in link, with no password.
 
-* **One-click registration**: Enter a report recipient email, grant consent, and enable the endpoint; Webfiable Info verifies the endpoint and registers the site automatically.
-* **Opt-in endpoint**: The public `/webfiable` endpoint is disabled by default and verified when enabled. If verification or registration fails, the plugin safely disables it.
-* **Consent-aware behavior**: Turning off consent simply saves your choice and disables the endpoint; you can re-enable later.
-* **Lightweight by design**: No heavy background jobs; the endpoint serves inventory on demand and runs in milliseconds.
-* **Secure by default**: Uses hybrid encryption (AES-256 + RSA-2048) to transport data.
-* **Part of the Webfiable service**: Currently in white march (early access) and free to use; a subscription may be required in the future. Learn more at https://webfiable.com.
+If the plugin was already set up before an update, your site registers again once after the update, in the background, without you having to do anything.
 
-== Security Features ==
+The plugin sends no email and no reports by email. The only messages you receive are the sign-in links you ask for on the panel's sign-in page.
 
-Webfiable Info is built with security at its core, ensuring that your website's data is protected at every stage:
+= What data it shares =
 
-* **Hybrid Encryption**: Combines AES and RSA. The inventory is encrypted with AES-256-CBC; the AES key is encrypted with RSA-2048.
-* **Fresh IV per response**: Each response uses a new IV so ciphertext is always unique.
-* **Public endpoint, private content**: The `/webfiable` endpoint can be accessed by anyone, but the payload is encrypted for Webfiable only.
-* **Rate limiting**: Basic per-IP rate limiting reduces abuse.
+Only if you give your consent and the data connection is on:
 
-== Why It Is Secure ==
+* the site address and an identifier the plugin creates when it is activated;
+* the versions of WordPress, of PHP and of the plugin itself;
+* the installed plugins and themes: name, identifier, version and short description;
+* the email you enter in the settings and the date you gave your consent.
 
-1. **Strong transport**: AES-256 for data, RSA-2048 for the key - only Webfiable can decrypt.
-2. **Unique IVs**: Each response is unique even for identical content.
-3. **Minimal inventory**: Only software inventory and basic metadata needed for analysis; no credentials or content are collected.
+It does not read your content, your users, passwords or any other credential.
+
+= How it protects that data =
+
+* The list is served encrypted at your site's `/webfiable` address: AES-256-CBC for the data and RSA-2048 for the key, with a new initialisation vector for every response. Anyone can request that address, but only Webfiable holds the private key that reads the answer. The encryption keeps the content confidential; it does not sign it, and it does not limit who can ask.
+* That address answers only after you give your consent and while the data connection is on, and it serves at most 25 requests per minute to the same IP address.
+* If you withdraw your consent, the address stops serving the list at once and the data connection is switched off.
+* The registration call itself (site identifier, site address and email) is sent as JSON over HTTPS.
+
+= External service: Webfiable =
+
+This plugin communicates with an external service, Webfiable (https://webfiable.com):
+
+* **Registration.** When you save the settings with your consent given, and once after each plugin update if you had already given it, the plugin sends the site identifier, the site address and the email from the settings over HTTPS to `https://webfiable.com/wp-json/webfiable/v1/activations`.
+* **Reading.** Afterwards, Webfiable requests your site's `/webfiable` address and reads, encrypted, the data listed above.
+
+Privacy policy: https://webfiable.com/privacidad/ · Legal notice: https://webfiable.com/aviso-legal/
+
+= Language =
+
+The settings screen is written in Spanish and includes an English translation, which WordPress uses when your dashboard language is not Spanish.
 
 == Installation ==
 
-1. Download the `webfiable-info.zip` file to your computer.
-2. Log in to your WordPress admin dashboard.
-3. Go to `Plugins > Add New`.
-4. Click the `Upload Plugin` button at the top of the page.
-5. Click `Choose File` and select the `webfiable-info.zip` file you downloaded.
-6. Click `Install Now`.
-7. Once the installation is complete, click `Activate Plugin`.
-
-After activation:
-
-1. Go to `Settings -> Webfiable Info`.
-2. Enter the report recipient email and check the consent box.
-3. Enable the `/webfiable` endpoint and click `Save settings`.
-4. The plugin verifies the endpoint and completes registration. If verification fails, the endpoint will be disabled and a notice explains what to fix.
+1. In your WordPress dashboard, go to **Plugins → Add New Plugin** and search for "Webfiable Análisis de Sitios".
+2. Click **Install Now** and then **Activate**.
+3. Go to **Settings → Webfiable**.
+4. Enter your email, tick the consent box and leave the data connection on.
+5. Click **Save Settings**. The plugin checks the connection and registers your site. If something fails, a notice tells you what to check and the data connection is switched off.
 
 == Frequently Asked Questions ==
 
-= Do I need a Webfiable subscription? =
+= How do I sign in to my panel? =
 
-Not during the white march (early access). The plugin registers your site automatically from the settings screen and you can use the service for free. A subscription may be required in the future. We will provide clear notice and a smooth upgrade path. See https://webfiable.com for updates.
+At https://siteaudit.webfiable.com/acceso, with the email you entered in the plugin settings. We send a single-use link to that address; there is no password.
 
-= How is my data secured? =
+= Why did the name change? =
 
-Data is encrypted on your site before transport using AES-256-CBC. The AES key is encrypted with RSA-2048 so only Webfiable can decrypt the payload.
+The plugin used to be called "Webfiable Info". It now carries the name of the service it connects to. It is the same plugin: the folder, the site identifier and your settings do not change.
 
-= What information is collected? =
+= Does the plugin send me reports by email? =
 
-Minimal inventory only: site URL, WordPress version, installed plugins and themes (name, slug, version, short description), a site identifier, consent timestamp, and the email you provide for reports. No user content or credentials.
+No. The plugin sends no email. Webfiable shows its analyses in your panel, which you enter with a sign-in link sent to your email when you ask for one.
 
-= What happens if I disable consent? =
+= What happens after I update the plugin? =
 
-Your preference is saved immediately, and the `/webfiable` endpoint is turned off. You can re-enable consent and the endpoint at any time from Settings.
+If you had already given your consent, entered a valid email and left the data connection on, the plugin registers your site again once, in the background, through WordPress's scheduled tasks (WP-Cron). If that registration fails, nothing else changes: your settings stay as they were, the failure is written to the plugin's internal activity log, and you can register at any time by saving the settings.
 
-= Why did registration fail? =
+= My site does not run WP-Cron. Will it register after an update? =
 
-The plugin enables and verifies the endpoint before registering. If your server blocks loopback requests, permalinks are misconfigured, or the OpenSSL PHP extension is missing, verification may fail. Fix the issue and click `Save settings` again - the plugin will retry.
+Not on its own. If `DISABLE_WP_CRON` is set and no system cron calls `wp-cron.php`, the registration after an update waits until the scheduled tasks run. You can register right away by saving the settings.
+
+= What happens if I withdraw my consent? =
+
+Your choice is saved at once and the data connection is switched off. You can give your consent again at any time from the settings.
+
+= Why can registration fail? =
+
+Before registering, the plugin checks that your site's `/webfiable` address answers. It fails if the server does not let the site call itself, if the permalinks need to be saved again, or if the PHP OpenSSL extension is missing. Fix the cause and save the settings again.
+
+= What stays in my WordPress if I uninstall the plugin? =
+
+The email, the consent and the data connection setting are deleted. The site identifier is kept, so that a reinstall is still the same site, and so is the plugin's activity log (its last 100 entries), which lives in your database and may contain the email and the site address from past saves and registrations.
 
 == Changelog ==
 
+= 2.2.0 =
+* New name: Webfiable Análisis de Sitios (formerly Webfiable Info). The folder, the site identifier and your settings do not change.
+* The settings screen and notices are written in Spanish; an English translation is included and used when the dashboard language is not Spanish.
+* Once your site is registered, the settings screen tells you how to sign in to your Análisis de Sitios de Webfiable panel.
+* After an update, a site that had already given its consent registers again once, in the background, so it appears in the panel without saving the settings.
+* New Webfiable look in the plugin listing and on the settings screen.
+* The privacy policy link points to the right page.
+* Declares WordPress 5.3 as the minimum, which the code has needed since 2.1.1. Tested up to WordPress 7.1.
+
 = 2.1.2 =
-* Fix .distignore excluding assets/ from published builds, which broke CSS and images.
+* Fixes the `.distignore`, which left the `assets/` folder, and with it the styles and images, out of the published packages.
 
 = 2.1.1 =
-* Add full Spanish (es_ES) translation with fallback for all es_* locales.
-* Fix phpcs warnings in endpoint.php and line-ending error in notice.css.
+* Full Spanish translation (es_ES), also used for the other Spanish locales.
+* Fixes phpcs warnings in `endpoint.php` and the line endings of `notice.css`.
 
 = 2.1.0 =
-* Friendlier, clearer messages and help text on the settings screen.
-* More modern, polished settings page layout with improved visual hierarchy.
+* Clearer messages and help texts on the settings screen.
+* Refreshed settings screen.
 
 = 2.0.6 =
-* Confirmed WordPress 6.9 compatibility after passing all tests; no other changes to the plugin.
+* Confirmed compatibility with WordPress 6.9; no other changes.
 
 = 2.0.5 =
-* Increase self-test timeout to 30s and activation call timeout to 60s to reduce registration failures on slower sites.
+* Longer timeouts: 30 s for the connection check and 60 s for the registration.
 
 = 2.0.4 =
-* Allow the `/webfiable` rewrite rule to match with or without a trailing slash so endpoint verification no longer fails on sites that enforce trailing slashes.
+* The `/webfiable` address answers with and without a trailing slash.
 
 = 2.0.3 =
-* Resolve Plugin Check (PCP) warnings by trimming short description and updating translation loader.
+* Resolves Plugin Check warnings.
 
 = 2.0.2 =
-* Finalize release packaging so WordPress.org distributions only include production files.
+* Published packages contain only production files.
 
 = 2.0.1 =
-* Ensure WordPress.org releases exclude development-only files.
+* Published packages exclude development files.
 
 = 2.0.0 =
-* New settings page under Settings -> Webfiable Info.
-* Opt-in `/webfiable` endpoint with on-save verification.
-* Automatic customer registration after successful verification.
-* Consent gating that saves your choice and disables the endpoint when consent is off.
-* Improved notices and lightweight, reliable design.
+* New settings screen.
+* Optional `/webfiable` address, checked on save.
+* Automatic registration after the check.
+* Saving without consent switches the data connection off.
 
 = 1.4 =
-* Initial release with AES-256/RSA-2048 hybrid encryption.
+* First version, with hybrid AES-256/RSA-2048 encryption.
 
 == Upgrade Notice ==
 
+= 2.2.0 =
+Webfiable Info is now called Webfiable Análisis de Sitios. If you had already given your consent, your site registers again on its own after the update; you will see it in your Análisis de Sitios de Webfiable panel when you sign in with your email.
+
 = 2.1.2 =
-Fix missing styles and images in published builds.
-
-= 2.1.1 =
-Full Spanish translation and minor code-quality fixes.
-
-= 2.1.0 =
-Friendlier settings experience and a refreshed, more modern interface.
-
-= 2.0.6 =
-Confirmed WordPress 6.9 compatibility after passing all tests; no other changes.
-
-== License ==
-
-This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
-
-
-
-
-
-
-
-
-
+Fixes the styles and images that were missing from the published packages.

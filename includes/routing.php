@@ -52,11 +52,12 @@ function webfiable_activate() {
 }
 
 /**
- * Deactivation: flush rewrite rules.
+ * Deactivation: flush rewrite rules and drop a pending registration after update.
  *
  * @return void
  */
 function webfiable_deactivate() {
 	flush_rewrite_rules();
+	wp_clear_scheduled_hook( WEBFIABLE_UPDATE_REGISTRATION_HOOK );
 	webfiable_log_action( 'plugin_deactivated' );
 }

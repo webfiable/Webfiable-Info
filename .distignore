@@ -19,3 +19,5 @@ phpunit.xml
 README.md
 *.zip
 *.tar.gz
+bin/
+RELEASE-CHECKLIST.md

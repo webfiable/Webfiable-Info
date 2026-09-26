@@ -1,49 +1,61 @@
 /**
- * Webfiable Info – Admin Settings Styles
+ * Webfiable Análisis de Sitios – settings page styles.
  *
- * Modern card-based layout with clean typography and visual hierarchy.
+ * The Webfiable palette, scoped to the plugin's own page. WordPress's primary
+ * button, focus rings, checked checkboxes and input focus take the brand through
+ * WordPress's own variable (--wp-admin-theme-color), set on .webfiable-wrap only.
+ * Success, error and warning keep WordPress's own colour pairs, so they read the
+ * same as every other admin screen. Flat surfaces: no gradients, no shadows.
  *
  * @package Webfiable_Info
  * @since   2.1.0
  */
 
 /* ------------------------------------------------------------------ */
-/*  Page header                                                       */
+/*  Tokens (branding/web/tokens.css)                                  */
 /* ------------------------------------------------------------------ */
 .webfiable-wrap {
+	--wf-ink: #0e1116;
+	--wf-paper: #f4f2ec;
+	--wf-lime: #b8f135;
+	--wf-lime-ink: #93c22a;
+	--wf-lime-soft: #edf3d9;
+	--wf-graphite: #5a5f6a;
+	--wf-border: #e2e0d6;
+	--wf-surface: #fff;
+	--wf-ink-hover: #262a31;
+	--wf-ink-active: #161a21;
+	--wp-admin-theme-color: var(--wf-ink);
+	--wp-admin-theme-color--rgb: 14, 17, 22;
+	/* The ink is near black: its hover and active states are the brand's ink surfaces. */
+	--wp-admin-theme-color-darker-10: var(--wf-ink-hover);
+	--wp-admin-theme-color-darker-20: var(--wf-ink-active);
 	max-width: 860px;
 	margin: 20px 0;
+	color: var(--wf-ink);
 }
 
-.webfiable-wrap .wp-header-end {
-	visibility: hidden;
-	margin: 0;
-	padding: 0;
-	height: 0;
-	border: 0;
-}
-
+/* ------------------------------------------------------------------ */
+/*  Page header                                                       */
+/* ------------------------------------------------------------------ */
 .webfiable-header {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 14px;
-	margin-bottom: 24px;
+	gap: 8px 14px;
+	margin-bottom: 8px;
 }
 
-.webfiable-header .webfiable-logo {
-	width: 36px;
-	height: 36px;
+.webfiable-header__brand {
 	display: flex;
 	align-items: center;
-	justify-content: center;
 	flex-shrink: 0;
 }
 
-.webfiable-header .webfiable-logo img {
+.webfiable-header__lockup {
 	display: block;
-	width: 100%;
-	height: 100%;
-	object-fit: contain;
+	width: 177px;
+	height: 28px;
 }
 
 .webfiable-header h1 {
@@ -52,17 +64,21 @@
 	line-height: 1.3;
 	margin: 0;
 	padding: 0;
-	color: #1d2327;
+	color: var(--wf-ink);
 }
 
 .webfiable-header .webfiable-version {
 	font-size: 12px;
 	font-weight: 400;
-	color: #787c82;
-	background: #f0f0f1;
+	color: var(--wf-graphite);
+	background: var(--wf-paper);
 	padding: 2px 8px;
 	border-radius: 10px;
 	align-self: center;
+}
+
+.webfiable-wrap .wp-header-end {
+	margin: 0 0 16px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -122,26 +138,26 @@
 }
 
 .webfiable-notice--info {
-	background: #f0f6fc;
-	color: #1d4a7a;
-	border-left: 4px solid #72aee6;
+	background: var(--wf-paper);
+	color: var(--wf-ink);
+	border-left: 4px solid var(--wf-graphite);
 }
 
 .webfiable-notice--info::before {
 	content: "\f348";
-	color: #72aee6;
+	color: var(--wf-graphite);
 }
 
 /* ------------------------------------------------------------------ */
-/*  Cards                                                             */
+/*  Cards: white surface, hairline border, title + bottom hairline     */
 /* ------------------------------------------------------------------ */
 .webfiable-card {
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 8px;
+	background: var(--wf-surface);
+	border: 1px solid var(--wf-border);
+	border-radius: 12px;
 	padding: 0;
 	margin-bottom: 20px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	box-shadow: none;
 }
 
 .webfiable-card__header {
@@ -149,14 +165,14 @@
 	align-items: center;
 	gap: 10px;
 	padding: 16px 20px;
-	border-bottom: 1px solid #f0f0f1;
+	border-bottom: 1px solid var(--wf-border);
 }
 
 .webfiable-card__header .dashicons {
 	font-size: 20px;
 	width: 20px;
 	height: 20px;
-	color: #0073aa;
+	color: var(--wf-graphite);
 }
 
 .webfiable-card__header h2 {
@@ -164,11 +180,78 @@
 	font-weight: 600;
 	margin: 0;
 	padding: 0;
-	color: #1d2327;
+	color: var(--wf-ink);
 }
 
 .webfiable-card__body {
 	padding: 20px;
+}
+
+/* The 20 px padding is the whole gap: no paragraph margin added on top or below. */
+.webfiable-card__body > :first-child {
+	margin-top: 0;
+}
+
+.webfiable-card__body > :last-child {
+	margin-bottom: 0;
+}
+
+/* One measure for every running text on the page. */
+.webfiable-card__body p,
+.webfiable-field__checkbox-text {
+	max-width: 66ch;
+}
+
+/* ------------------------------------------------------------------ */
+/*  «Tus informes en Webfiable»: the way into the panel                */
+/* ------------------------------------------------------------------ */
+.webfiable-intro {
+	max-width: 66ch;
+	margin: 0 0 20px;
+	font-size: 13px;
+	color: var(--wf-graphite);
+}
+
+/* A long registered email wraps instead of widening the page. */
+.webfiable-card--panel strong {
+	overflow-wrap: anywhere;
+}
+
+/* Lime is a fill, never text: the 1 px ink border carries the shape on white. */
+.webfiable-button--lime {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 40px;
+	padding: 0 16px;
+	box-sizing: border-box;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--wf-ink);
+	background: var(--wf-lime);
+	border: 1px solid var(--wf-ink);
+	border-radius: 4px;
+	text-decoration: none;
+}
+
+.webfiable-button--lime:hover,
+.webfiable-button--lime:focus {
+	color: var(--wf-ink);
+	background: var(--wf-lime);
+	text-decoration: underline;
+}
+
+.webfiable-button--lime:focus {
+	outline: 2px solid var(--wf-ink);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+.webfiable-button--lime .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -186,7 +269,7 @@
 	display: block;
 	font-size: 13px;
 	font-weight: 600;
-	color: #1d2327;
+	color: var(--wf-ink);
 	margin-bottom: 6px;
 }
 
@@ -195,24 +278,17 @@
 	max-width: 400px;
 	padding: 8px 12px;
 	font-size: 14px;
-	border: 1px solid #8c8f94;
+	border: 1px solid var(--wf-graphite);
 	border-radius: 4px;
-	background: #fff;
-	color: #2c3338;
-	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	background: var(--wf-surface);
+	color: var(--wf-ink);
 	box-sizing: border-box;
-}
-
-.webfiable-field__input input[type="email"]:focus {
-	border-color: #0073aa;
-	box-shadow: 0 0 0 1px #0073aa;
-	outline: none;
 }
 
 .webfiable-field__help {
 	margin-top: 6px;
 	font-size: 12px;
-	color: #646970;
+	color: var(--wf-graphite);
 	line-height: 1.5;
 }
 
@@ -231,30 +307,35 @@
 
 .webfiable-field__checkbox-text {
 	font-size: 13px;
-	color: #2c3338;
+	color: var(--wf-ink);
 }
 
 .webfiable-field__checkbox-text a {
-	color: #0073aa;
+	color: var(--wf-ink);
 	text-decoration: underline;
-	text-decoration-color: rgba(0, 115, 170, 0.35);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
 }
 
-.webfiable-field__checkbox-text a:hover {
-	text-decoration-color: #0073aa;
+.webfiable-field__checkbox-text a:hover,
+.webfiable-field__checkbox-text a:focus {
+	color: var(--wf-ink);
+	text-decoration-thickness: 2px;
 }
 
 .webfiable-field__endpoint-url {
 	margin-top: 8px;
 	padding: 6px 10px;
-	background: #f6f7f7;
-	border: 1px solid #dcdcde;
+	background: var(--wf-paper);
+	border: 1px solid var(--wf-border);
 	border-radius: 4px;
 	display: inline-block;
 	font-size: 12px;
 	font-family: Consolas, Monaco, monospace;
-	color: #50575e;
-	word-break: break-all;
+	color: var(--wf-graphite);
+	/* Break the URL only where it would overflow, never inside a word that fits. */
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .webfiable-field__forced-note {
@@ -280,25 +361,17 @@
 /* Separator between form groups */
 .webfiable-field + .webfiable-field {
 	padding-top: 20px;
-	border-top: 1px solid #f0f0f1;
+	border-top: 1px solid var(--wf-border);
 }
 
 /* ------------------------------------------------------------------ */
-/*  Primary action button                                             */
+/*  Card footer (WordPress's primary button, branded by the variable)  */
 /* ------------------------------------------------------------------ */
 .webfiable-card__footer {
 	padding: 16px 20px;
-	border-top: 1px solid #f0f0f1;
-	background: #f9f9f9;
-	border-radius: 0 0 8px 8px;
-}
-
-.webfiable-card__footer .button-primary {
-	padding: 6px 20px;
-	font-size: 13px;
-	font-weight: 500;
-	min-height: 36px;
-	border-radius: 4px;
+	border-top: 1px solid var(--wf-border);
+	background: var(--wf-paper);
+	border-radius: 0 0 12px 12px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -315,9 +388,9 @@
 	align-items: flex-start;
 	gap: 12px;
 	padding: 14px 16px;
-	background: #f9f9f9;
-	border-radius: 6px;
-	border: 1px solid #f0f0f1;
+	background: var(--wf-surface);
+	border-radius: 8px;
+	border: 1px solid var(--wf-border);
 }
 
 .webfiable-status-item__icon {
@@ -332,13 +405,14 @@
 }
 
 .webfiable-status-item__icon--id {
-	background: #f0f6fc;
-	color: #0073aa;
+	background: var(--wf-paper);
+	color: var(--wf-ink);
 }
 
-.webfiable-status-item__icon--connection {
-	background: #edfaef;
-	color: #00a32a;
+.webfiable-status-item__icon--connection,
+.webfiable-status-item__icon--consent {
+	background: var(--wf-lime-soft);
+	color: var(--wf-ink);
 }
 
 .webfiable-status-item__icon--connection.is-disabled {
@@ -346,14 +420,9 @@
 	color: #d63638;
 }
 
-.webfiable-status-item__icon--consent {
-	background: #edfaef;
-	color: #00a32a;
-}
-
 .webfiable-status-item__icon--consent.is-disabled {
-	background: #fef8ee;
-	color: #dba617;
+	background: var(--wf-paper);
+	color: var(--wf-graphite);
 }
 
 .webfiable-status-item__content {
@@ -366,21 +435,23 @@
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	color: #787c82;
+	color: var(--wf-graphite);
 	margin-bottom: 2px;
 }
 
 .webfiable-status-item__value {
 	font-size: 13px;
-	color: #1d2327;
-	word-break: break-all;
+	color: var(--wf-ink);
+	/* Words wrap at spaces and hyphens; an unbroken run still wraps, only at the edge. */
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .webfiable-status-item__value code {
 	font-size: 12px;
 	padding: 1px 5px;
-	background: #fff;
-	border: 1px solid #dcdcde;
+	background: var(--wf-paper);
+	border: 1px solid var(--wf-border);
 	border-radius: 3px;
 }
 
@@ -396,19 +467,21 @@
 	line-height: 1.6;
 }
 
-.webfiable-pill--green {
-	background: #edfaef;
-	color: #1a5e26;
+.webfiable-pill--on {
+	background: var(--wf-lime-soft);
+	color: var(--wf-ink);
 }
 
-.webfiable-pill--red {
+.webfiable-pill--off {
 	background: #fef0f0;
 	color: #8a1f1f;
 }
 
-.webfiable-pill--yellow {
-	background: #fef8ee;
-	color: #6e4b00;
+/* A state of the connection, not a result: dashed, neutral. */
+.webfiable-pill--pending {
+	background: var(--wf-paper);
+	color: var(--wf-ink);
+	border: 1px dashed var(--wf-graphite);
 }
 
 .webfiable-pill .dashicons {
@@ -418,76 +491,93 @@
 }
 
 /* ------------------------------------------------------------------ */
-/*  Activity log                                                      */
+/*  Activity log (shown after a failed save, right under the notice)  */
 /* ------------------------------------------------------------------ */
-.webfiable-log-toggle {
+.webfiable-log-intro {
+	margin-top: 0;
+}
+
+.webfiable-log > summary {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	background: none;
-	border: none;
-	padding: 0;
+	min-height: 40px;
 	cursor: pointer;
 	font-size: 13px;
-	color: #0073aa;
-	font-weight: 500;
-	margin-top: 4px;
+	font-weight: 600;
+	color: var(--wf-ink);
+	list-style: none;
 }
 
-.webfiable-log-toggle:hover {
-	color: #005a87;
+.webfiable-log > summary::-webkit-details-marker {
+	display: none;
 }
 
-.webfiable-log-toggle .dashicons {
+.webfiable-log > summary:focus {
+	outline: 2px solid var(--wf-ink);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+.webfiable-log > summary .dashicons {
 	font-size: 18px;
 	width: 18px;
 	height: 18px;
 	transition: transform 0.2s ease;
 }
 
-.webfiable-log-toggle[aria-expanded="true"] .dashicons {
+.webfiable-log[open] > summary .dashicons {
 	transform: rotate(180deg);
 }
 
-.webfiable-log-content {
-	margin-top: 16px;
+@media (prefers-reduced-motion: reduce) {
+	.webfiable-log > summary .dashicons {
+		transition: none;
+	}
 }
 
+.webfiable-log-scroll {
+	margin-top: 12px;
+	overflow-x: auto;
+}
+
+/* Below 640 px the wrapper scrolls instead of crushing the columns. */
 .webfiable-log-table {
 	width: 100%;
+	min-width: 640px;
 	border-collapse: separate;
 	border-spacing: 0;
 	font-size: 12px;
-	border: 1px solid #dcdcde;
+	border: 1px solid var(--wf-border);
 	border-radius: 6px;
-	overflow: hidden;
 }
 
 .webfiable-log-table thead th {
-	background: #f6f7f7;
+	background: var(--wf-paper);
 	padding: 10px 12px;
 	text-align: left;
 	font-weight: 600;
-	color: #50575e;
+	color: var(--wf-graphite);
 	font-size: 11px;
 	text-transform: uppercase;
 	letter-spacing: 0.4px;
-	border-bottom: 1px solid #dcdcde;
+	border-bottom: 1px solid var(--wf-border);
 }
 
 .webfiable-log-table tbody td {
 	padding: 8px 12px;
-	border-bottom: 1px solid #f0f0f1;
+	border-bottom: 1px solid var(--wf-border);
 	vertical-align: top;
-	color: #2c3338;
+	color: var(--wf-ink);
 }
 
 .webfiable-log-table tbody tr:last-child td {
 	border-bottom: none;
 }
 
-.webfiable-log-table tbody tr:hover {
-	background: #f9f9f9;
+/* The time stays on one line. */
+.webfiable-log-table td:first-child code {
+	white-space: nowrap;
 }
 
 .webfiable-log-table .webfiable-log-level {
@@ -501,8 +591,8 @@
 }
 
 .webfiable-log-level--INFO {
-	background: #f0f6fc;
-	color: #1d4a7a;
+	background: var(--wf-paper);
+	color: var(--wf-ink);
 }
 
 .webfiable-log-level--WARNING {
@@ -516,15 +606,17 @@
 }
 
 .webfiable-log-level--DEBUG {
-	background: #f0f0f1;
-	color: #50575e;
+	background: var(--wf-paper);
+	color: var(--wf-graphite);
 }
 
+/* The details keep a readable measure; the wrapper scrolls for the rest. */
 .webfiable-log-table pre {
+	min-width: 280px;
 	margin: 4px 0 0;
 	padding: 8px 10px;
-	background: #f6f7f7;
-	border: 1px solid #e2e4e7;
+	background: var(--wf-paper);
+	border: 1px solid var(--wf-border);
 	border-radius: 4px;
 	font-size: 11px;
 	line-height: 1.5;
@@ -535,7 +627,7 @@
 }
 
 .webfiable-log-table .webfiable-no-details {
-	color: #a7aaad;
+	color: var(--wf-graphite);
 	font-style: italic;
 }
 
@@ -553,9 +645,24 @@
 
 	.webfiable-field__input input[type="email"] {
 		max-width: 100%;
+		min-height: 44px;
 	}
 
-	.webfiable-header {
-		flex-wrap: wrap;
+	.webfiable-log > summary,
+	.webfiable-button--lime,
+	.webfiable-field__checkbox {
+		min-height: 44px;
+	}
+
+	/* The page's own save button: WordPress keeps it at 40 px here. */
+	.webfiable-wrap .button-primary {
+		min-height: 44px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	/* The lockup takes its own row; the title and the version share the second. */
+	.webfiable-header__brand {
+		flex-basis: 100%;
 	}
 }

@@ -1,36 +1,181 @@
 name: Release to WordPress.org
 
+# A tag vX.Y.Z publishes that version on wordpress.org, but only after `verify`
+# proves that the tag names the code's version, that the tagged commit is on
+# main, that the same checks as CI pass, and that the zip a deploy would commit
+# has the package's files and nothing else. `deploy` is the only job that sees
+# the SVN secrets, in one step. `deploy` rebuilds the zip from the same commit
+# instead of taking verify's (so nothing verify runs can alter what is
+# published); `compare` then proves the two builds hold the same files, byte
+# for byte. Every action is pinned to a full commit SHA; the comment names its
+# tag.
+
 on:
   push:
     tags:
-      - 'v*.*.*'     # publica al crear tags tipo v1.4.0
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+concurrency: { group: release, cancel-in-progress: false }
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
+  verify:
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
 
-      # Si necesitas compilar (npm/composer), descomenta y ajusta:
-      # - name: Setup Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: '20'
-      # - run: npm ci && npm run build
-      #
-      # - name: Setup PHP
-      #   uses: shivammathur/setup-php@v2
-      #   with:
-      #     php-version: '8.2'
-      # - run: composer install --no-dev --prefer-dist
+      - name: The tag names the code's version, and the tagged commit is on main
+        run: |
+          python3 bin/release_checks.py coherence --tag "${GITHUB_REF_NAME}"
+          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
 
-      - name: Deploy to WordPress.org
-        uses: 10up/action-wordpress-plugin-deploy@stable
+      - name: Release-check self-test (proves each check can fail)
+        run: python3 bin/release_checks.py selftest
+
+      - name: Translations (the English file covers every Spanish source string)
+        run: |
+          command -v msgfmt || { sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext; }
+          python3 bin/release_checks.py i18n
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - name: PHP 7.4 parses every shipped PHP file
+        run: |
+          php -v | head -n 1
+          python3 bin/release_checks.py php74 --list | xargs -n 1 php -l
+
+      - name: The PHP 7.4 lint can fail (a PHP 8.0 match expression must not parse)
+        run: |
+          printf '<?php echo match (1) { 1 => "a" };\n' > "$RUNNER_TEMP/m.php"
+          if php -l "$RUNNER_TEMP/m.php"; then
+            echo "php -l accepted PHP 8.0 syntax: this job would not catch it"
+            exit 1
+          fi
+          echo "php -l refused the PHP 8.0 fixture, as it must"
+
+      - name: No PHP 8.0-only function or syntax in shipped files
+        run: python3 bin/release_checks.py php74
+
+      - name: PHP unit tests (PHP 7.4)
+        run: php tests/run.php
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          tools: 'composer:v2'
+          coverage: none
+
+      - name: PHP unit tests (PHP 8.3)
+        run: php tests/run.php
+
+      - name: composer install
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: phpcs
+        run: vendor/bin/phpcs --standard=phpcs.xml -s --report=full
+
+      - name: phpcs scanned every shipped PHP file
+        run: |
+          set +e
+          vendor/bin/phpcs --standard=phpcs.xml --report=json > "$RUNNER_TEMP/phpcs.json"
+          set -e
+          scanned=$(python3 -c 'import json,sys; print(sum(1 for f in json.load(open(sys.argv[1]))["files"] if f.endswith(".php")))' "$RUNNER_TEMP/phpcs.json")
+          shipped=$(python3 bin/release_checks.py php74 --list | wc -l)
+          echo "phpcs scanned ${scanned} PHP files; the package ships ${shipped}"
+          test "${scanned}" -eq "${shipped}"
+          test "${shipped}" -ge 1
+
+      - id: dry
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        with:
+          dry-run: true
+          generate-zip: true
+        env:
+          SLUG: webfiable-info
+          # Never an SVN tag: a version that already exists on SVN would make the
+          # action zip the published trunk instead of this commit.
+          VERSION: ci-${{ github.run_id }}
+          # Required non-empty by the action, never used in dry-run.
+          SVN_USERNAME: dry-run
+          SVN_PASSWORD: dry-run
+
+      - name: Inspect the zip (package list and the tag's version)
+        env:
+          ZIP: ${{ steps.dry.outputs.zip-path }}
+        run: python3 bin/release_checks.py zip "$ZIP" --expect-version "${GITHUB_REF_NAME#v}"
+
+      # Uploaded right after the inspection, before Plugin Check runs code this
+      # workflow does not pin (@wordpress/env, the latest Plugin Check): the
+      # evidence artifact is the zip that was inspected.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: webfiable-info-${{ github.ref_name }}-verified
+          path: ${{ steps.dry.outputs.zip-path }}
+
+      - name: Unpack for Plugin Check
+        env:
+          ZIP: ${{ steps.dry.outputs.zip-path }}
+        run: mkdir -p dist && unzip -q "$ZIP" -d dist
+
+      - uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: ./dist/webfiable-info
+          slug: webfiable-info
+
+  deploy:
+    runs-on: ubuntu-24.04
+    needs: verify
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # No VERSION: the action takes it from the tag, without the leading v.
+      - id: deploy
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        with:
+          generate-zip: true
         env:
           SVN_USERNAME: ${{ secrets.WPORG_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WPORG_PASSWORD }}
           SLUG: webfiable-info
           ASSETS_DIR: .wordpress-org
-          # Use .distignore to control which files ship in the release.
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: webfiable-info-${{ github.ref_name }}-deployed
+          path: ${{ steps.deploy.outputs.zip-path }}
+
+  # No secret, read-only token: turns a divergence between the inspected zip and
+  # the published one into a red run (it can only report after the SVN commit).
+  compare:
+    runs-on: ubuntu-24.04
+    needs: [verify, deploy]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: webfiable-info-${{ github.ref_name }}-verified
+          path: ${{ runner.temp }}/verified
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: webfiable-info-${{ github.ref_name }}-deployed
+          path: ${{ runner.temp }}/deployed
+
+      - name: The published zip holds the verified files (names and sha256 per file)
+        run: python3 bin/release_checks.py samezip "$RUNNER_TEMP/verified/webfiable-info.zip" "$RUNNER_TEMP/deployed/webfiable-info.zip"
