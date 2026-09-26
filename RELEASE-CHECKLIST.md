@@ -159,19 +159,20 @@ arregló en `ccf720a`: ahora mide 44 px.
 
 ## 6. Los commits fijados de las acciones, releídos
 
-Cada `uses:` de `.github/workflows/ci.yml` y `release.yml` va fijado a un commit completo, con la
+Cada `uses:` de `.github/workflows/ci.yml`, `release.yml` y `assets.yml` va fijado a un commit completo, con la
 etiqueta en un comentario. Antes de etiquetar, se comparan las líneas `uses:` de `main` con esta tabla
 (0 diferencias). Si una acción cambia de commit, se lee su código en el commit nuevo, se actualiza esta
 tabla en una PR y se vuelve al paso 4.
 
 | Acción | Etiqueta | Commit | Dónde |
 |---|---|---|---|
-| `actions/checkout` | v7.0.1 | `3d3c42e5aac5ba805825da76410c181273ba90b1` | ci ×3, release ×3 |
+| `actions/checkout` | v7.0.1 | `3d3c42e5aac5ba805825da76410c181273ba90b1` | ci ×3, release ×3, assets ×1 |
 | `shivammathur/setup-php` | 2.37.2 | `f3e473d116dcccaddc5834248c87452386958240` | ci ×2, release ×2 |
 | `WordPress/plugin-check-action` | v1.1.9 | `10857da14b6c2246d15402b3e69f777edcf8c12e` | ci ×1, release ×1 |
 | `actions/upload-artifact` | v7.0.1 | `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a` | ci ×1, release ×2 |
 | `actions/download-artifact` | v8.0.1 | `3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c` | release ×2 (`compare`) |
 | `10up/action-wordpress-plugin-deploy` | 2.3.0 | `54bd289b8525fd23a5c365ec369185f2966529c2` | ci ×1, release ×2 |
+| `10up/action-wordpress-plugin-asset-update` | 2.2.0 | `2480306f6f693672726d08b5917ea114cb2825f7` | assets ×1 |
 
 ```
 git grep -h "uses:" origin/main -- .github/workflows | sed 's/^ *- *//; s/^ *//' | sort | uniq -c
@@ -189,6 +190,19 @@ Queda una referencia móvil conocida: `plugin-check-action` instala `@wordpress/
 todas iguales a lo fijado. `download-artifact` se añadió el 2026-09-25 con `compare`, y su código se
 leyó en `3e5f45b2…`. En `ccf720a`, 20 de 20 líneas `uses:` están fijadas a un commit completo con su
 comentario. La relectura sobre `main` es del paso de la etiqueta.
+
+**Recursos de la ficha sin nueva versión (2026-09-26).** `assets.yml` sube `.wordpress-org/` (y el
+readme, si cambia) a SVN en cada push a `main` que toque `.wordpress-org/**` o `readme.txt`, y a mano
+con `workflow_dispatch`. Usa `10up/action-wordpress-plugin-asset-update` 2.2.0 (última estable, etiqueta
+ligera `commit`), leída en `2480306f…`: `deploy.sh` sha256
+`d511a5f853e2ec8ae7c9405f78db93e236e0a382810f9ef5edb68fd109d5d5ae`, `action.yml` compuesto que solo
+ejecuta ese `deploy.sh`. Nunca publica código: copia `main` a `trunk/` con `.distignore` solo para
+comparar y sale con 1, antes de cualquier commit de SVN, si en `trunk/` cambia algo que no sea
+`readme.txt` (`deploy.sh:180-182`). Con código sin publicar en `main` falla cerrado hasta la siguiente
+etiqueta. `IGNORE_OTHER_FILES` queda en `false` a propósito: `true` se saltaría esa comparación y
+subiría a `trunk/` el readme de `main` aunque su «Stable tag» aún no exista. Comparte el grupo de
+concurrencia `release` con `release.yml`. Hasta S8-T1, la única guarda es el proceso: quien pueda
+empujar a `main` puede cambiar los recursos y el readme de la ficha.
 
 ## 7. El «Ship» de Fernando
 
