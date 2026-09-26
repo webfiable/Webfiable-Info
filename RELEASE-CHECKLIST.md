@@ -34,7 +34,7 @@ Tres hechos que conviene tener delante antes de empezar:
 | 7 | «Ship» de Fernando para la etiqueta | Fernando | palabra explícita, nombrando la versión | pendiente |
 | 8 | Etiqueta `vX.Y.Z` sobre `main` | quien tenga el «Ship» | `verify`, `deploy` y `compare` de `release.yml` en verde | pendiente |
 | 9 | Ventana de vigilancia, con el paquete que sirve wordpress.org | quien publicó | lecturas del paso 9 | pendiente; la prueba de que la comprobación del paquete servido sabe fallar ya está hecha (2.1.1, abajo) |
-| 10 | Retroceso: qué palanca hay y quién la tiene | Fernando | leer el paso 10 antes del paso 8 | escrito; tiempo real de una publicación: <medido en SPRINT-8-SHIP.md> |
+| 10 | Retroceso: qué palanca hay y quién la tiene | Fernando | leer el paso 10 antes del paso 8 | escrito; tiempo real de una publicación (2.2.0): 8 m 34 s de PR lista a `deploy` en verde; de la etiqueta a `deploy` en verde, 2 m 56 s; paquete servido leído como 2.2.0 a los 4 m 14 s de la etiqueta (primera lectura, cota superior) |
 
 ## 1. La pregunta del número mayor
 
@@ -293,7 +293,9 @@ retira versiones y WordPress no baja de versión un plugin instalado.
 - **La palanca que funciona es la siguiente versión de parche** (tras 2.2.0, la 2.2.1), recorriendo
   esta misma lista desde el paso 1. Arregla también a quien ya actualizó, si tiene la actualización
   automática o actualiza a mano. Tiempo medido de PR a CI, fusión, etiqueta y versión en vivo en esta
-  publicación: <medido en SPRINT-8-SHIP.md>.
+  publicación (2.2.0): **8 m 34 s** de PR lista a `deploy` en verde. De la etiqueta a `deploy` en verde,
+  2 m 56 s; el paquete que sirve wordpress.org se leyó como 2.2.0 a los 4 m 14 s de la etiqueta (primera
+  lectura, así que es una cota superior). Fuente: `SPRINT-8-SHIP.md`, R4/R5.
 
 **El lado de SiteAudit.** El cambio de SiteAudit que acompaña a una publicación va a producción antes
 de la etiqueta. Volver a la imagen del commit anterior de producción solo es válido mientras la
