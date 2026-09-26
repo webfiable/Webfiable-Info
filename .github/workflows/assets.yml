@@ -1,0 +1,50 @@
+name: Listing assets to WordPress.org
+
+# A push to main that changes .wordpress-org/ or readme.txt updates the
+# listing's assets (icons, banners) and, when it differs, the readme of trunk
+# and of the stable tag on wordpress.org, without a new version. It never
+# commits plugin code: the action rsyncs main into trunk/ (with .distignore)
+# only to compare, and exits 1 before any SVN commit when any trunk file other
+# than readme.txt differs (deploy.sh:180-182 at the pinned commit). So once
+# unreleased code is on main this run fails closed until the next tag.
+# IGNORE_OTHER_FILES stays false on purpose: true would skip that comparison
+# and push main's readme (with a Stable tag that may not exist yet) to trunk.
+#
+# Publication is guarded by process only until S8-T1 (protected environment
+# `wordpress-org` with a required reviewer): anyone who can push to main can
+# change the listing's assets and readme.
+#
+# Same concurrency group as release.yml: an assets update never overlaps a
+# deploy. Every action is pinned to a full commit SHA; the comment names its
+# tag.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.wordpress-org/**'
+      - 'readme.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assets:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency: { group: release, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: 10up/action-wordpress-plugin-asset-update@2480306f6f693672726d08b5917ea114cb2825f7 # 2.2.0
+        env:
+          SVN_USERNAME: ${{ secrets.WPORG_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.WPORG_PASSWORD }}
+          SLUG: webfiable-info
+          ASSETS_DIR: .wordpress-org
+          README_NAME: readme.txt
+          IGNORE_OTHER_FILES: false
