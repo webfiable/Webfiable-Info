@@ -207,8 +207,27 @@ function wp_clear_scheduled_hook( $hook, $args = array(), $wp_error = false ) {
 	return 0;
 }
 
+// A stand-in for WP_Rewrite: add_rewrite_rule( ..., 'top' ) writes extra_rules_top,
+// as WordPress does, and a flush records the top rules it would write to the database.
+class WF_Test_Rewrite {
+	public $extra_rules_top = array();
+}
+$GLOBALS['wp_rewrite'] = new WF_Test_Rewrite();
+
+function add_rewrite_rule( $regex, $query, $after = 'bottom' ) {
+	wf_test_record( 'add_rewrite_rule', array( $regex, $query, $after ) );
+	if ( 'top' === $after ) {
+		$GLOBALS['wp_rewrite']->extra_rules_top[ $regex ] = $query;
+	}
+}
+
+function remove_action( $hook, $callback, $priority = 10 ) {
+	wf_test_record( 'remove_action', array( $hook, $callback ) );
+	return true;
+}
+
 function flush_rewrite_rules( $hard = true ) {
-	wf_test_record( 'flush_rewrite_rules', array( $hard ) );
+	wf_test_record( 'flush_rewrite_rules', array( $hard, $GLOBALS['wp_rewrite']->extra_rules_top ) );
 }
 
 /** The recorded calls of one function, in order. */

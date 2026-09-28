@@ -358,6 +358,40 @@ assert_same( array( array( array( WEBFIABLE_UPDATE_REGISTRATION_HOOK ) ), array(
 
 assert_same( '', webfiable_default_options()['webfiable_plugin_version'], 'the stamp option defaults to empty' );
 
+// ------------------------------------------------------------ the /webfiable rule on activation and deactivation (S8-T3)
+// WordPress runs the deactivation hook with the plugin loaded and its rule
+// already added on init; the flush writes whatever is in the rules at that
+// moment. The rule has to be gone before the flush, not after.
+$wf_route = array( '^webfiable/?$' => 'index.php?webfiable_route=1' );
+
+// Activation (unchanged): the rule is added, then the flush writes it.
+wf_test_reset();
+$GLOBALS['wp_rewrite']->extra_rules_top = array();
+webfiable_activate();
+assert_same( array( array( true, $wf_route ) ), wf_test_calls_of( 'flush_rewrite_rules' ), 'activation: the flush writes the /webfiable rule' );
+
+// Deactivation, with the rule registered on init as on a live request.
+wf_test_reset();
+$GLOBALS['wp_rewrite']->extra_rules_top = array( '^other/?$' => 'index.php?other=1' );
+webfiable_register_route();
+webfiable_deactivate();
+assert_same( array( array( true, array( '^other/?$' => 'index.php?other=1' ) ) ), wf_test_calls_of( 'flush_rewrite_rules' ), 'deactivation: one flush, without the /webfiable rule and with the other rules kept' );
+$wf_order = array_values(
+	array_filter(
+		array_map(
+			function ( $c ) {
+				return $c[0];
+			},
+			$GLOBALS['wf_test_calls']
+		),
+		function ( $name ) {
+			return in_array( $name, array( 'remove_action', 'flush_rewrite_rules' ), true );
+		}
+	)
+);
+assert_same( array( 'remove_action', 'flush_rewrite_rules' ), $wf_order, 'deactivation: the init registration is unhooked before the flush' );
+assert_same( array( array( 'init', 'webfiable_register_route' ) ), wf_test_calls_of( 'remove_action' ), 'deactivation: it unhooks webfiable_register_route from init' );
+
 // ------------------------------------------------------------ image URLs carry the version (S8-T24)
 // The images keep their file names across versions, so each URL carries
 // ?ver=<plugin version>; without it a browser that cached 2.1.x keeps the old icon.
