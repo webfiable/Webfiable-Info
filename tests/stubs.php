@@ -221,3 +221,85 @@ function wf_test_calls_of( $name ) {
 	}
 	return $calls;
 }
+
+// ------------------------------------------------------------ rendering (the banner and the settings page)
+// Enough of WordPress for webfiable_admin_notice_incomplete_setup() and
+// webfiable_render_settings_page() to print their HTML with no request.
+function add_query_arg( $key, $value, $url ) {
+	return $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . rawurlencode( $key ) . '=' . rawurlencode( (string) $value );
+}
+
+function is_network_admin() {
+	return false;
+}
+
+function is_user_admin() {
+	return false;
+}
+
+function current_user_can( $capability ) {
+	return true;
+}
+
+function admin_url( $path = '' ) {
+	return 'https://example.test/wp-admin/' . ltrim( $path, '/' );
+}
+
+function esc_html_e( $text, $domain = 'default' ) {
+	echo esc_html( $text );
+}
+
+function esc_attr( $text ) {
+	return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
+}
+
+function absint( $value ) {
+	return abs( (int) $value );
+}
+
+function checked( $checked, $current = true, $display = true ) {
+	$out = ( (string) $checked === (string) $current ) ? " checked='checked'" : '';
+	if ( $display ) {
+		echo $out;
+	}
+	return $out;
+}
+
+function disabled( $disabled, $current = true, $display = true ) {
+	$out = ( (string) $disabled === (string) $current ) ? " disabled='disabled'" : '';
+	if ( $display ) {
+		echo $out;
+	}
+	return $out;
+}
+
+function wp_nonce_field( $action = -1, $name = '_wpnonce' ) {
+	echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="nonce" />';
+}
+
+function submit_button( $text = null ) {
+	echo '<input type="submit" value="' . esc_attr( (string) $text ) . '" />';
+}
+
+function wp_date( $format, $timestamp = null ) {
+	return gmdate( $format, (int) $timestamp );
+}
+
+/** The src of every <img> in an HTML string, in order. */
+function wf_test_img_srcs( $html ) {
+	preg_match_all( '/<img\b[^>]*\bsrc="([^"]*)"/i', $html, $m );
+	return $m[1];
+}
+
+/** The <img> srcs that do not end in ?ver=<plugin version>: the ones a browser would keep from its cache after an update. */
+function wf_test_unversioned_img_srcs( $html ) {
+	$suffix = '?ver=' . WEBFIABLE_INFO_VERSION;
+	return array_values(
+		array_filter(
+			wf_test_img_srcs( $html ),
+			function ( $src ) use ( $suffix ) {
+				return substr( $src, -strlen( $suffix ) ) !== $suffix;
+			}
+		)
+	);
+}
