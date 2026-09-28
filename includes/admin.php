@@ -60,6 +60,20 @@ add_action( 'admin_notices', 'webfiable_admin_notice_openssl' );
 add_action( 'network_admin_notices', 'webfiable_admin_notice_openssl' );
 
 /**
+ * URL of an image the plugin ships in assets/img, with the plugin version as ?ver=.
+ *
+ * The images keep their file names from one version to the next; the version in
+ * the URL makes a browser fetch them again after an update instead of showing
+ * the copy it cached from the previous version.
+ *
+ * @param string $file File name inside assets/img.
+ * @return string Unescaped URL.
+ */
+function webfiable_image_url( $file ) {
+	return add_query_arg( 'ver', WEBFIABLE_INFO_VERSION, WEBFIABLE_PLUGIN_URL . 'assets/img/' . $file );
+}
+
+/**
  * Incomplete setup notice (site-admin only).
  */
 function webfiable_admin_notice_incomplete_setup() {
@@ -94,7 +108,7 @@ function webfiable_admin_notice_incomplete_setup() {
 	?>
 	<div class="webfiable-setup-banner notice is-dismissible">
 		<div class="webfiable-setup-banner__icon">
-			<img src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/icon.png' ); ?>" alt="" width="40" height="40" />
+			<img src="<?php echo esc_url( webfiable_image_url( 'icon.png' ) ); ?>" alt="" width="40" height="40" />
 		</div>
 		<div class="webfiable-setup-banner__body">
 			<p class="webfiable-setup-banner__title"><?php esc_html_e( 'Ya casi está: termina de configurar Webfiable Análisis de Sitios.', 'webfiable-info' ); ?></p>
@@ -560,7 +574,7 @@ function webfiable_render_settings_page() {
 
 		<!-- Page header -->
 		<div class="webfiable-header">
-			<div class="webfiable-header__brand"><img class="webfiable-header__lockup" src="<?php echo esc_url( WEBFIABLE_PLUGIN_URL . 'assets/img/webfiable-lockup-light.svg' ); ?>" alt="" width="177" height="28" /></div>
+			<div class="webfiable-header__brand"><img class="webfiable-header__lockup" src="<?php echo esc_url( webfiable_image_url( 'webfiable-lockup-light.svg' ) ); ?>" alt="" width="177" height="28" /></div>
 			<h1><span class="screen-reader-text"><?php esc_html_e( 'Webfiable', 'webfiable-info' ); ?> </span><?php esc_html_e( 'Análisis de Sitios', 'webfiable-info' ); ?></h1>
 			<span class="webfiable-version"><?php echo esc_html( 'v' . WEBFIABLE_INFO_VERSION ); ?></span>
 		</div>

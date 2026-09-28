@@ -3,7 +3,7 @@
  * Plugin Name: Webfiable Análisis de Sitios
  * Plugin URI: https://wordpress.org/plugins/webfiable-info/
  * Description: Conecta tu WordPress con el panel de Análisis de Sitios de Webfiable para analizar su seguridad y su configuración.
- * Version: 2.2.0
+ * Version: 2.2.1
  * Requires at least: 5.3
  * Requires PHP: 7.4
  * Author: Webfiable

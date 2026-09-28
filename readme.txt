@@ -4,7 +4,7 @@ Tags: security, monitoring, hardening, inventory, endpoint
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -102,6 +102,10 @@ The email, the consent and the data connection setting are deleted. The site ide
 
 == Changelog ==
 
+= 2.2.1 =
+* The plugin's images now carry the plugin version in their address, so browsers show the new ones after an update instead of a cached copy.
+* Deactivating the plugin now removes its /webfiable address.
+
 = 2.2.0 =
 * New name: Webfiable Análisis de Sitios (formerly Webfiable Info). The folder, the site identifier and your settings do not change.
 * The settings screen and notices are written in Spanish; an English translation is included and used when the dashboard language is not Spanish.
@@ -150,6 +154,9 @@ The email, the consent and the data connection setting are deleted. The site ide
 * First version, with hybrid AES-256/RSA-2048 encryption.
 
 == Upgrade Notice ==
+
+= 2.2.1 =
+Fixes the old Webfiable icon still showing after the update, and removes the /webfiable address when the plugin is deactivated.
 
 = 2.2.0 =
 Webfiable Info is now called Webfiable Análisis de Sitios. If you had already given your consent, your site registers again on its own after the update; you will see it in your Análisis de Sitios de Webfiable panel when you sign in with your email.

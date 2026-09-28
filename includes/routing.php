@@ -9,15 +9,41 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; }
 
 /**
+ * The rewrite rule's regex for /webfiable.
+ *
+ * Accepts both /webfiable and /webfiable/ to avoid 404s on trailing-slash sites.
+ *
+ * @return string
+ */
+function webfiable_route_regex() {
+	return '^' . WEBFIABLE_ENDPOINT_SLUG . '/?$';
+}
+
+/**
  * Register rewrite rule for /webfiable.
  *
  * @return void
  */
 function webfiable_register_route() {
-	// Accept both /webfiable and /webfiable/ to avoid 404s on trailing-slash sites.
-	add_rewrite_rule( '^' . WEBFIABLE_ENDPOINT_SLUG . '/?$', 'index.php?webfiable_route=1', 'top' );
+	add_rewrite_rule( webfiable_route_regex(), 'index.php?webfiable_route=1', 'top' );
 }
 add_action( 'init', 'webfiable_register_route' );
+
+/**
+ * Take the /webfiable rule out of this request's rewrite rules.
+ *
+ * On deactivation the plugin is still loaded and its rule was added on init,
+ * so a flush would write it back; this removes it first.
+ *
+ * @return void
+ */
+function webfiable_unregister_route() {
+	global $wp_rewrite;
+	remove_action( 'init', 'webfiable_register_route' );
+	if ( is_object( $wp_rewrite ) && isset( $wp_rewrite->extra_rules_top ) && is_array( $wp_rewrite->extra_rules_top ) ) {
+		unset( $wp_rewrite->extra_rules_top[ webfiable_route_regex() ] );
+	}
+}
 
 /**
  * Add the webfiable_route query var.
@@ -52,11 +78,13 @@ function webfiable_activate() {
 }
 
 /**
- * Deactivation: flush rewrite rules and drop a pending registration after update.
+ * Deactivation: remove the /webfiable rule, flush rewrite rules and drop a
+ * pending registration after update.
  *
  * @return void
  */
 function webfiable_deactivate() {
+	webfiable_unregister_route();
 	flush_rewrite_rules();
 	wp_clear_scheduled_hook( WEBFIABLE_UPDATE_REGISTRATION_HOOK );
 	webfiable_log_action( 'plugin_deactivated' );

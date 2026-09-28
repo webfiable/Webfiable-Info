@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; }
 
 // Keep version in sync with header.
-define( 'WEBFIABLE_INFO_VERSION', '2.2.0' );
+define( 'WEBFIABLE_INFO_VERSION', '2.2.1' );
 
 // Where the registration call goes (the settings save and the update path).
 define( 'WEBFIABLE_REGISTRATION_BASE', 'https://webfiable.com' );
